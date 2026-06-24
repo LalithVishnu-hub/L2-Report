@@ -1,0 +1,14 @@
+2026-06-23 14:57:00,444 - __main__ - INFO - ============================================================
+2026-06-23 14:57:00,444 - __main__ - INFO - Testing Email Configuration
+2026-06-23 14:57:00,444 - __main__ - INFO - ============================================================
+2026-06-23 14:57:00,504 - __main__ - INFO - Sending test email to: test@example.com
+2026-06-23 14:57:00,505 - __main__ - ERROR - Error testing email: ' font-family'
+Traceback (most recent call last):
+  File "C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\send_reports.py", line 113, in test_email_configuration
+    success = sender.send_test_email(test_email)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\email_utils.py", line 185, in send_test_email
+    """.format(self.smtp_server, self.smtp_port, self.from_email)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: ' font-family'
+2026-06-23 14:57:00,509 - __main__ - INFO - ============================================================

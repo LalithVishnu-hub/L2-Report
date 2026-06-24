@@ -1,0 +1,244 @@
+2026-06-24 00:05:47,904 - INFO - ================================================================================
+2026-06-24 00:05:47,904 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 00:05:47
+2026-06-24 00:05:47,904 - INFO - ================================================================================
+2026-06-24 00:05:47,904 - INFO - Generating L2 Report...
+2026-06-24 00:05:50,468 - INFO - ================================================================================
+2026-06-24 00:05:50,468 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 00:05:50,468 - INFO - ================================================================================
+2026-06-24 00:05:50,500 - INFO - Connecting to Outlook...
+2026-06-24 00:05:50,500 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 00:05:55,863 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 00:05:56,117 - INFO -   Added recipient: lalvishn@in.ibm.com
+2026-06-24 00:05:56,123 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 00:05:57,491 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 00:05:57,491 - INFO -   To: lalvishn@in.ibm.com,lv1087@att.com
+2026-06-24 00:05:57,491 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 00:05:57,491 - INFO -   Body: HTML (9288 bytes)
+2026-06-24 00:05:57,491 - INFO - Sending email via Outlook...
+2026-06-24 00:05:58,633 - INFO - ================================================================================
+2026-06-24 00:05:58,635 - INFO - ================================================================================
+2026-06-24 00:08:33,214 - INFO - ================================================================================
+2026-06-24 00:08:33,214 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 00:08:33
+2026-06-24 00:08:33,214 - INFO - ================================================================================
+2026-06-24 00:08:33,214 - INFO - Generating L2 Report...
+2026-06-24 00:08:34,480 - INFO - [OK] L2_Report.html generated successfully
+2026-06-24 00:08:34,480 - INFO - ================================================================================
+2026-06-24 00:08:34,480 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 00:08:34,480 - INFO - ================================================================================
+2026-06-24 00:08:34,513 - INFO - Connecting to Outlook...
+2026-06-24 00:08:34,518 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 00:08:35,408 - INFO - [OK] Outlook application started
+2026-06-24 00:08:39,413 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 00:08:39,413 - INFO - [OK] Email body loaded (9288 bytes) from C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\html_reports\L2_Report.html
+2026-06-24 00:08:39,590 - INFO -   Added recipient: lalvishn@in.ibm.com
+2026-06-24 00:08:39,594 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 00:08:41,208 - INFO -   [OK] All recipients resolved
+2026-06-24 00:08:41,249 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 00:08:41,249 - INFO -   To: lalvishn@in.ibm.com,lv1087@att.com
+2026-06-24 00:08:41,249 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 00:08:41,249 - INFO -   Body: HTML (9288 bytes)
+2026-06-24 00:08:41,249 - INFO - Sending email via Outlook...
+2026-06-24 00:08:42,299 - INFO - ================================================================================
+2026-06-24 00:08:42,299 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
+2026-06-24 00:08:42,299 - INFO - [OK] Timestamp: 2026-06-24 00:08:42
+2026-06-24 00:08:42,299 - INFO - ================================================================================
+2026-06-24 00:15:53,411 - INFO - ================================================================================
+2026-06-24 00:15:53,411 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 00:15:53
+2026-06-24 00:15:53,411 - INFO - ================================================================================
+2026-06-24 00:15:53,411 - INFO - Generating L2 Report...
+2026-06-24 00:15:55,812 - INFO - [OK] L2_Report.html generated successfully
+2026-06-24 00:15:55,812 - INFO - ================================================================================
+2026-06-24 00:15:55,812 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 00:15:55,812 - INFO - ================================================================================
+2026-06-24 00:15:55,843 - INFO - Connecting to Outlook...
+2026-06-24 00:15:55,843 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 00:15:56,769 - INFO - [OK] Outlook application started
+2026-06-24 00:16:00,772 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 00:16:00,772 - INFO - [OK] Email body loaded (9288 bytes) from C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\html_reports\L2_Report.html
+2026-06-24 00:16:00,993 - INFO -   Added recipient: lalvishn@in.ibm.com
+2026-06-24 00:16:01,000 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 00:16:02,352 - INFO -   [OK] All recipients resolved
+2026-06-24 00:16:02,386 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 00:16:02,386 - INFO -   To: lalvishn@in.ibm.com,lv1087@att.com
+2026-06-24 00:16:02,386 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 00:16:02,386 - INFO -   Body: HTML (9288 bytes)
+2026-06-24 00:16:02,386 - INFO - Sending email via Outlook...
+2026-06-24 00:16:03,336 - INFO - ================================================================================
+2026-06-24 00:16:03,336 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
+2026-06-24 00:16:03,338 - INFO - [OK] Timestamp: 2026-06-24 00:16:03
+2026-06-24 00:16:03,338 - INFO - ================================================================================
+2026-06-24 00:20:30,305 - INFO - ================================================================================
+2026-06-24 00:20:30,305 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 00:20:30
+2026-06-24 00:20:30,320 - INFO - ================================================================================
+2026-06-24 00:20:30,320 - INFO - Generating L2 Report...
+2026-06-24 00:20:33,069 - INFO - [OK] L2_Report.html generated successfully
+2026-06-24 00:20:33,069 - INFO - ================================================================================
+2026-06-24 00:20:33,069 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 00:20:33,084 - INFO - ================================================================================
+2026-06-24 00:20:33,115 - INFO - Connecting to Outlook...
+2026-06-24 00:20:33,115 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 00:20:34,214 - INFO - [OK] Outlook application started
+2026-06-24 00:20:38,232 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 00:20:38,235 - INFO - [OK] Email body loaded (10005 bytes) from C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\html_reports\L2_Report.html
+2026-06-24 00:20:38,433 - INFO -   Added recipient: lalvishn@in.ibm.com
+2026-06-24 00:20:38,436 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 00:20:40,077 - INFO -   [OK] All recipients resolved
+2026-06-24 00:20:40,147 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 00:20:40,148 - INFO -   To: lalvishn@in.ibm.com,lv1087@att.com
+2026-06-24 00:20:40,148 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 00:20:40,148 - INFO -   Body: HTML (10005 bytes)
+2026-06-24 00:20:40,148 - INFO - Sending email via Outlook...
+2026-06-24 00:20:41,187 - INFO - ================================================================================
+2026-06-24 00:20:41,193 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
+2026-06-24 00:20:41,193 - INFO - [OK] Timestamp: 2026-06-24 00:20:41
+2026-06-24 00:20:41,194 - INFO - ================================================================================
+2026-06-24 00:25:19,186 - INFO - ================================================================================
+2026-06-24 00:25:19,186 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 00:25:19
+2026-06-24 00:25:19,186 - INFO - ================================================================================
+2026-06-24 00:25:19,186 - INFO - Generating L2 Report...
+2026-06-24 00:25:21,906 - INFO - [OK] L2_Report.html generated successfully
+2026-06-24 00:25:21,906 - INFO - ================================================================================
+2026-06-24 00:25:21,906 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 00:25:21,906 - INFO - ================================================================================
+2026-06-24 00:25:21,934 - INFO - Connecting to Outlook...
+2026-06-24 00:25:21,934 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 00:25:23,124 - INFO - [OK] Outlook application started
+2026-06-24 00:25:27,133 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 00:25:27,133 - INFO - [OK] Email body loaded (10005 bytes) from C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\html_reports\L2_Report.html
+2026-06-24 00:25:27,325 - INFO -   Added recipient: lalvishn@in.ibm.com
+2026-06-24 00:25:27,329 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 00:25:28,736 - INFO -   [OK] All recipients resolved
+2026-06-24 00:25:28,804 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 00:25:28,804 - INFO -   To: lalvishn@in.ibm.com,lv1087@att.com
+2026-06-24 00:25:28,804 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 00:25:28,804 - INFO -   Body: HTML (10005 bytes)
+2026-06-24 00:25:28,804 - INFO - Sending email via Outlook...
+2026-06-24 00:25:29,697 - INFO - ================================================================================
+2026-06-24 00:25:29,699 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
+2026-06-24 00:25:29,699 - INFO - [OK] Timestamp: 2026-06-24 00:25:29
+2026-06-24 00:25:29,701 - INFO - ================================================================================
+2026-06-24 00:30:01,131 - INFO - ================================================================================
+2026-06-24 00:30:01,131 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 00:30:01
+2026-06-24 00:30:01,131 - INFO - ================================================================================
+2026-06-24 00:30:01,131 - INFO - Generating L2 Report...
+2026-06-24 00:30:03,955 - INFO - [OK] L2_Report.html generated successfully
+2026-06-24 00:30:03,955 - INFO - ================================================================================
+2026-06-24 00:30:03,955 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 00:30:03,955 - INFO - ================================================================================
+2026-06-24 00:30:03,981 - INFO - Connecting to Outlook...
+2026-06-24 00:30:03,981 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 00:30:05,356 - INFO - [OK] Outlook application started
+2026-06-24 00:30:09,370 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 00:30:09,372 - INFO - [OK] Email body loaded (10005 bytes) from C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\html_reports\L2_Report.html
+2026-06-24 00:30:09,630 - INFO -   Added recipient: lalvishn@in.ibm.com
+2026-06-24 00:30:09,639 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 00:30:11,048 - INFO -   [OK] All recipients resolved
+2026-06-24 00:30:11,133 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 00:30:11,136 - INFO -   To: lalvishn@in.ibm.com,lv1087@att.com
+2026-06-24 00:30:11,136 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 00:30:11,136 - INFO -   Body: HTML (10005 bytes)
+2026-06-24 00:30:11,136 - INFO - Sending email via Outlook...
+2026-06-24 00:30:12,401 - INFO - ================================================================================
+2026-06-24 00:30:12,401 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
+2026-06-24 00:30:12,401 - INFO - [OK] Timestamp: 2026-06-24 00:30:12
+2026-06-24 00:30:12,401 - INFO - ================================================================================
+2026-06-24 00:45:21,188 - INFO - ================================================================================
+2026-06-24 00:45:21,188 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 00:45:21
+2026-06-24 00:45:21,188 - INFO - ================================================================================
+2026-06-24 00:45:21,188 - INFO - Generating L2 Report...
+2026-06-24 00:45:26,117 - INFO - [OK] L2_Report.html generated successfully
+2026-06-24 00:45:26,117 - INFO - ================================================================================
+2026-06-24 00:45:26,117 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 00:45:26,117 - INFO - ================================================================================
+2026-06-24 00:45:26,294 - INFO - Connecting to Outlook...
+2026-06-24 00:45:26,299 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 00:45:27,501 - INFO - [OK] Outlook application started
+2026-06-24 00:45:31,510 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 00:45:31,510 - INFO - [OK] Email body loaded (10005 bytes) from C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\html_reports\L2_Report.html
+2026-06-24 00:45:31,669 - INFO -   Added recipient: lalvishn@in.ibm.com
+2026-06-24 00:45:31,673 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 00:45:33,066 - INFO -   [OK] All recipients resolved
+2026-06-24 00:45:33,126 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 00:45:33,126 - INFO -   To: lalvishn@in.ibm.com,lv1087@att.com
+2026-06-24 00:45:33,126 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 00:45:33,126 - INFO -   Body: HTML (10005 bytes)
+2026-06-24 00:45:33,126 - INFO - Sending email via Outlook...
+2026-06-24 00:45:34,028 - INFO - ================================================================================
+2026-06-24 00:45:34,028 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
+2026-06-24 00:45:34,028 - INFO - [OK] Timestamp: 2026-06-24 00:45:34
+2026-06-24 00:45:34,028 - INFO - ================================================================================
+2026-06-24 15:26:06,035 - INFO - ================================================================================
+2026-06-24 15:26:06,035 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 15:26:06
+2026-06-24 15:26:06,035 - INFO - ================================================================================
+2026-06-24 15:26:06,035 - INFO - Generating L2 Report...
+2026-06-24 15:26:14,653 - INFO - [OK] L2_Report.html generated successfully
+2026-06-24 15:26:14,653 - INFO - ================================================================================
+2026-06-24 15:26:14,653 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 15:26:14,653 - INFO - ================================================================================
+2026-06-24 15:26:14,990 - INFO - Connecting to Outlook...
+2026-06-24 15:26:14,995 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 15:26:16,486 - INFO - [OK] Outlook application started
+2026-06-24 15:26:20,504 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 15:26:20,504 - INFO - [OK] Email body loaded (9973 bytes) from C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\html_reports\L2_Report.html
+2026-06-24 15:26:20,788 - INFO -   Added recipient: lalvishn@in.ibm.com
+2026-06-24 15:26:20,792 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 15:26:21,858 - INFO -   [OK] All recipients resolved
+2026-06-24 15:26:21,953 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 15:26:21,956 - INFO -   To: lalvishn@in.ibm.com,lv1087@att.com
+2026-06-24 15:26:21,956 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 15:26:21,957 - INFO -   Body: HTML (9973 bytes)
+2026-06-24 15:26:21,961 - INFO - Sending email via Outlook...
+2026-06-24 15:26:23,176 - INFO - ================================================================================
+2026-06-24 15:26:23,176 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
+2026-06-24 15:26:23,176 - INFO - [OK] Timestamp: 2026-06-24 15:26:23
+2026-06-24 15:26:23,176 - INFO - ================================================================================
+2026-06-24 16:34:45,306 - INFO - ================================================================================
+2026-06-24 16:34:45,306 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 16:34:45
+2026-06-24 16:34:45,306 - INFO - ================================================================================
+2026-06-24 16:34:45,306 - INFO - Generating L2 Report...
+2026-06-24 16:34:59,502 - INFO - [OK] L2_Report.html generated successfully
+2026-06-24 16:34:59,505 - INFO - ================================================================================
+2026-06-24 16:34:59,505 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 16:34:59,506 - INFO - ================================================================================
+2026-06-24 16:34:59,800 - INFO - Connecting to Outlook...
+2026-06-24 16:34:59,807 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 16:35:01,487 - INFO - [OK] Outlook application started
+2026-06-24 16:35:05,498 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 16:35:05,503 - INFO - [OK] Email body loaded (9973 bytes) from C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\html_reports\L2_Report.html
+2026-06-24 16:35:05,847 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 16:35:05,854 - INFO -   Added recipient: kbharadw@in.ibm.com
+2026-06-24 16:35:07,571 - INFO -   [OK] All recipients resolved
+2026-06-24 16:35:11,286 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 16:35:11,288 - INFO -   To: lv1087@att.com,kbharadw@in.ibm.com
+2026-06-24 16:35:11,288 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 16:35:11,288 - INFO -   Body: HTML (9973 bytes)
+2026-06-24 16:35:11,290 - INFO - Sending email via Outlook...
+2026-06-24 16:35:11,979 - INFO - ================================================================================
+2026-06-24 16:35:11,979 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
+2026-06-24 16:35:11,980 - INFO - [OK] Timestamp: 2026-06-24 16:35:11
+2026-06-24 16:35:11,980 - INFO - ================================================================================
+2026-06-24 19:06:54,426 - INFO - ================================================================================
+2026-06-24 19:06:54,426 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 19:06:54
+2026-06-24 19:06:54,426 - INFO - ================================================================================
+2026-06-24 19:06:54,426 - INFO - Generating L2 Report...
+2026-06-24 19:07:01,343 - INFO - [OK] L2_Report.html generated successfully
+2026-06-24 19:07:01,345 - INFO - ================================================================================
+2026-06-24 19:07:01,349 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 19:07:01,358 - INFO - ================================================================================
+2026-06-24 19:07:01,878 - INFO - Connecting to Outlook...
+2026-06-24 19:07:01,880 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 19:07:02,916 - INFO - [OK] Outlook application started
+2026-06-24 19:07:06,918 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 19:07:06,962 - INFO - [OK] Email body loaded (9973 bytes) from C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\html_reports\L2_Report.html
+2026-06-24 19:07:07,203 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 19:07:07,207 - INFO -   Added recipient: kbharadw@in.ibm.com
+2026-06-24 19:07:08,467 - INFO -   [OK] All recipients resolved
+2026-06-24 19:07:08,521 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 19:07:08,521 - INFO -   To: lv1087@att.com,kbharadw@in.ibm.com
+2026-06-24 19:07:08,521 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 19:07:08,521 - INFO -   Body: HTML (9973 bytes)
+2026-06-24 19:07:08,521 - INFO - Sending email via Outlook...
+2026-06-24 19:07:09,423 - INFO - ================================================================================
+2026-06-24 19:07:09,423 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
+2026-06-24 19:07:09,425 - INFO - [OK] Timestamp: 2026-06-24 19:07:09
+2026-06-24 19:07:09,425 - INFO - ================================================================================

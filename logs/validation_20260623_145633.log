@@ -1,0 +1,31 @@
+2026-06-23 14:56:33,101 - INFO - ======================================================================
+2026-06-23 14:56:33,101 - INFO - L2 Report Automation - Setup Validation
+2026-06-23 14:56:33,101 - INFO - ======================================================================
+2026-06-23 14:56:33,101 - INFO - 
+2026-06-23 14:56:33,101 - INFO - ENVIRONMENT CHECKS:
+2026-06-23 14:56:33,101 - INFO - ----------------------------------------------------------------------
+2026-06-23 14:56:33,171 - INFO - 
+2026-06-23 14:56:33,171 - INFO - CONFIGURATION CHECKS:
+2026-06-23 14:56:33,171 - INFO - ----------------------------------------------------------------------
+2026-06-23 14:56:36,790 - INFO - 
+2026-06-23 14:56:36,790 - INFO - FUNCTIONALITY CHECKS:
+2026-06-23 14:56:36,790 - INFO - ----------------------------------------------------------------------
+2026-06-23 14:56:36,790 - INFO - Testing SMTP connection to mail.company.com:25...
+2026-06-23 14:56:37,044 - ERROR - Error reading Excel file C:\Users\LalithVishnu\Box\L1 Report Repository\PID_434956_BOOM Deprecation_ETE_2025.06_Status_as_of_12_01.xlsx: Worksheet named 'Overall Status' not found
+2026-06-23 14:56:37,104 - ERROR - Error reading Excel file C:\Users\LalithVishnu\Box\L1 Report Repository\PID_434956_BOOM Deprecation_ETE_2025.06_Status_as_of_12_01.xlsx: Worksheet named 'Overall Status' not found
+2026-06-23 14:56:37,142 - INFO - 
+2026-06-23 14:56:37,142 - INFO - ======================================================================
+2026-06-23 14:56:37,142 - INFO - VALIDATION SUMMARY
+2026-06-23 14:56:37,142 - INFO - ======================================================================
+2026-06-23 14:56:37,142 - INFO - Passed: 22
+2026-06-23 14:56:37,143 - INFO - Failed: 4
+2026-06-23 14:56:37,143 - INFO - Warnings: 1
+2026-06-23 14:56:37,143 - INFO - 
+2026-06-23 14:56:37,143 - INFO - WARNINGS:
+2026-06-23 14:56:37,143 - WARNING -   • Could not verify Flask routes: No module named 'watchdog'
+2026-06-23 14:56:37,143 - INFO - 
+2026-06-23 14:56:37,144 - INFO - ======================================================================
+2026-06-23 14:56:37,145 - INFO - FIX FAILURES BEFORE SETTING UP AUTOMATION
+2026-06-23 14:56:37,145 - INFO - ======================================================================
+2026-06-23 14:56:37,145 - INFO - Validation log: C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\logs\validation_20260623_145633.log
+2026-06-23 14:56:37,145 - INFO - 

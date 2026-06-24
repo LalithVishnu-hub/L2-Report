@@ -1,0 +1,71 @@
+name: L2 Project Dashboard Report - Daily Email
+
+on:
+  schedule:
+    # Runs daily at 12:00 AM IST (18:30 UTC previous day)
+    - cron: '30 18 * * *'
+  
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  generate-and-send-report:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas openpyxl python-dotenv
+      
+      - name: Create .env file from secrets
+        run: |
+          cat > .env << EOF
+          OFFICE365_REFRESH_TOKEN=${{ secrets.OFFICE365_REFRESH_TOKEN }}
+          EMAIL_TO=${{ secrets.EMAIL_TO }}
+          EMAIL_FROM=lalvishn@in.ibm.com
+          EMAIL_SUBJECT=L2 Project Dashboard Report - ETE Status Update
+          EOF
+      
+      - name: Generate L2 Report
+        run: |
+          python generate_L2_report.py
+      
+      - name: Send email via Office 365
+        run: |
+          python send_l2_report_office365.py
+      
+      - name: Upload report as artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: L2-Report-${{ github.run_id }}
+          path: L2_Report.html
+          retention-days: 30
+        with:
+          name: L2-Report-${{ github.run_id }}
+          path: L2_Report.html
+          retention-days: 30
+      
+      - name: Check for errors in logs
+        if: failure()
+        run: |
+          echo "Report generation or sending failed. Check workflow logs above."
+          exit 1
+
+  notify-on-failure:
+    runs-on: ubuntu-latest
+    needs: generate-and-send-report
+    if: failure()
+    
+    steps:
+      - name: Send failure notification
+        run: |
+          echo "L2 Report workflow failed. Check GitHub Actions logs."
