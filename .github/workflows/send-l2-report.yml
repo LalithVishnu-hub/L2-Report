@@ -1,0 +1,63 @@
+name: Send L2 Dashboard Report
+
+# Trigger schedule: Daily at 4 PM UTC (adjust timezone as needed)
+# To use IST (UTC+5:30), subtract 5.5 hours: 4 PM IST = 10:30 AM UTC
+on:
+  schedule:
+    - cron: '30 10 * * *'  # 10:30 AM UTC = 4:00 PM IST
+  workflow_dispatch:  # Allow manual trigger from Actions tab
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Download database from GitHub Releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Download the latest database from releases
+          python scripts/download_database_from_releases.py
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Generate L2 Report
+        run: |
+          python L2_Report_Mail/generate_L2_report.py
+      
+      - name: Send L2 Report Email
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_SUBJECT: ${{ secrets.EMAIL_SUBJECT }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: |
+          python L2_Report_Mail/send_l2_report_smtp.py
+      
+      - name: Upload database to GitHub Releases
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/upload_database_to_releases.py
+      
+      - name: Upload report as artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: L2-Report-${{ github.run_number }}
+          path: html_reports/L2_Report.html
+          retention-days: 30
