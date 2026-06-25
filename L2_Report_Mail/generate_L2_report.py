@@ -430,6 +430,13 @@ def generate_l1_static_page(project, file_path):
                     cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">{pct}</td>'
                 except Exception:
                     cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">{escape(cell)}</td>'
+            elif 'step' in col.lower():
+                # Convert steps to integers if they're numeric
+                try:
+                    step_val = int(float(cell))
+                    cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">{step_val}</td>'
+                except Exception:
+                    cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">{escape(cell)}</td>'
             else:
                 cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">{escape(cell)}</td>'
         detail_rows_html += f'<tr>{cells_html}</tr>\n'
