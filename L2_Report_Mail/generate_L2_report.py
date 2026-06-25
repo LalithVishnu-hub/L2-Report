@@ -287,18 +287,50 @@ def read_overall_project_status(file_path):
     data = {'critical_highlights': '', 'defect_summary': ''}
     try:
         df = pd.read_excel(file_path, sheet_name=sheet, header=None, nrows=50)
+        
+        # Extract DEFECT SUMMARY section (row 29 onwards)
+        defect_summary_lines = []
+        critical_highlights_lines = []
+        in_defect_section = False
+        in_critical_section = False
+        
         for i, row in df.iterrows():
-            if len(row) < 2:
+            if len(row) < 1:
                 continue
             col0 = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else ''
             col1 = str(row.iloc[1]).strip() if len(row) > 1 and pd.notna(row.iloc[1]) else ''
-            if col0 and col1:
-                if 'critical highlight' in col0.lower():
-                    data['critical_highlights'] = col1
-                elif 'defect summ' in col0.lower():
-                    data['defect_summary'] = col1
+            
+            # Check for section headers
+            if 'defect summary' in col0.lower():
+                in_defect_section = True
+                in_critical_section = False
+                continue
+            elif 'critical highlight' in col0.lower():
+                in_defect_section = False
+                in_critical_section = True
+                continue
+            elif col0.lower().startswith('test case') or col0.lower().startswith('overall status'):
+                in_defect_section = False
+                in_critical_section = False
+            
+            # Collect defect summary data
+            if in_defect_section and col0 and col1:
+                defect_summary_lines.append(f"{col0}: {col1}")
+            
+            # Collect critical highlights
+            if in_critical_section and col0:
+                if col0 not in ['', 'CRITICAL HIGHLIGHTS as of']:
+                    critical_highlights_lines.append(col0)
+        
+        if defect_summary_lines:
+            data['defect_summary'] = ' | '.join(defect_summary_lines[:5])  # Limit to 5 entries
+        
+        if critical_highlights_lines:
+            data['critical_highlights'] = ' '.join(critical_highlights_lines[:3])  # First 3 lines
+    
     except Exception:
         pass
+    
     return data
 
 
@@ -340,9 +372,11 @@ def _status_color(status):
 
 
 def generate_l1_static_page(project, file_path):
-    """Generate a self-contained static HTML page for one L1 project."""
+    """Generate a self-contained static HTML page for one L1 project with all details."""
     tc_summary_rows = extract_tc_summary_full(file_path)
     detail_headers, detail_rows = read_detailed_tc_rows(file_path)
+    project_status = read_overall_project_status(file_path)
+    defect_log_rows = read_defect_log(file_path)
     status = str(project.get('overall_status', 'N/A')).strip()
     status_color = _status_color(status)
 
@@ -390,7 +424,59 @@ def generate_l1_static_page(project, file_path):
         colspan = max(len(detail_headers), 1)
         detail_rows_html = f'<tr><td colspan="{colspan}" style="padding:10px;text-align:center;color:#888;">No detailed TC data available</td></tr>'
 
+    # Defect Log table
+    defect_headers_html = ''
+    defect_rows_html = ''
+    if defect_log_rows:
+        cols = list(defect_log_rows[0].keys())
+        defect_headers_html = ''.join(f'<th style="padding:8px 10px;white-space:nowrap;">{escape(h)}</th>' for h in cols)
+        for row in defect_log_rows:
+            cells_html = ''.join(
+                f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">{escape(str(row.get(col, "")))}</td>'
+                for col in cols
+            )
+            defect_rows_html += f'<tr>{cells_html}</tr>\n'
+        if not defect_rows_html:
+            defect_rows_html = f'<tr><td colspan="{len(cols)}" style="padding:10px;text-align:center;color:#888;">No defects logged</td></tr>'
+    
+    # Critical highlights and defect summary
+    highlights_section = ''
+    if project_status.get('critical_highlights'):
+        highlights_section += f'''
+    <div style="margin:20px 0;padding:15px;background:#fff3cd;border-left:4px solid #ff9800;border-radius:4px;">
+      <strong style="color:#856404;font-size:13px;">⚠ Critical Highlights:</strong>
+      <p style="margin:6px 0 0;color:#856404;font-size:12px;line-height:1.5;">{escape(project_status["critical_highlights"])}</p>
+    </div>'''
+    if project_status.get('defect_summary'):
+        highlights_section += f'''
+    <div style="margin:12px 0;padding:15px;background:#ffebee;border-left:4px solid #d32f2f;border-radius:4px;">
+      <strong style="color:#c62828;font-size:13px;">🔴 Defect Summary:</strong>
+      <p style="margin:6px 0 0;color:#c62828;font-size:12px;line-height:1.5;">{escape(project_status["defect_summary"])}</p>
+    </div>'''
+
     generated_at = datetime.now().strftime('%d %b %Y %I:%M %p')
+
+    detail_table_html = ''
+    if detail_headers:
+        detail_table_html = f'''
+    <h3 style="margin:28px 0 10px;color:#4472C4;">Detailed TC Execution</h3>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:#4472C4;color:#fff;">{detail_headers_html}</tr></thead>
+      <tbody>{detail_rows_html}</tbody>
+    </table>
+    </div>'''
+
+    defect_table_html = ''
+    if defect_log_rows:
+        defect_table_html = f'''
+    <h3 style="margin:28px 0 10px;color:#d32f2f;">Defect Log</h3>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:#d32f2f;color:#fff;">{defect_headers_html}</tr></thead>
+      <tbody>{defect_rows_html}</tbody>
+    </table>
+    </div>'''
 
     return f'''<!DOCTYPE html>
 <html lang="en">
@@ -399,8 +485,9 @@ def generate_l1_static_page(project, file_path):
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>L1 Report – {escape(str(project["project_name"]))}</title>
 <style>
-  body{{font-family:\'Times New Roman\',Times,serif;background:#f4f6f9;margin:0;padding:20px;}}
-  .card{{background:#fff;max-width:860px;margin:0 auto;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.1);overflow:hidden;}}
+  *{{box-sizing:border-box;}}
+  body{{font-family:'Times New Roman',Times,serif;background:#f4f6f9;margin:0;padding:20px;}}
+  .card{{background:#fff;max-width:1200px;margin:0 auto;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.1);overflow:hidden;}}
   .header{{background:#4472C4;color:#fff;padding:24px 32px;}}
   .header h1{{margin:0;font-size:22px;}}
   .header p{{margin:4px 0 0;font-size:13px;opacity:.85;}}
@@ -409,10 +496,15 @@ def generate_l1_static_page(project, file_path):
   .field label{{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;}}
   .field span{{font-size:14px;color:#222;}}
   .status-badge{{display:inline-block;padding:6px 18px;border-radius:20px;color:#fff;font-weight:bold;font-size:14px;background:{status_color};}}
-  table{{width:100%;border-collapse:collapse;margin-top:8px;}}
-  th{{background:#4472C4;color:#fff;padding:10px 16px;text-align:left;font-size:13px;}}
-  th:last-child{{text-align:center;}}
-  .footer{{font-size:11px;color:#aaa;text-align:right;margin-top:20px;}}
+  .summary-table{{width:340px;border-collapse:collapse;margin-top:8px;}}
+  .summary-table th{{background:#4472C4;color:#fff;padding:9px 14px;text-align:left;font-size:13px;}}
+  .summary-table td{{border:1px solid #ddd;font-family:'Times New Roman',serif;font-size:13px;}}
+  .footer{{font-size:11px;color:#aaa;text-align:right;margin-top:24px;border-top:1px solid #eee;padding-top:8px;}}
+  tbody tr:nth-child(even){{background:#f9f9f9;}}
+  tbody tr:hover{{background:#eef3ff;}}
+  table{{border-collapse:collapse;}}
+  table th{{background:#4472C4;color:#fff;padding:10px;text-align:left;font-weight:bold;}}
+  table td{{border:1px solid #ddd;padding:8px;}}
 </style>
 </head>
 <body>
@@ -432,11 +524,14 @@ def generate_l1_static_page(project, file_path):
       <div class="field"><label>Last Updated</label><span>{escape(str(project["last_updated"]))}</span></div>
       <div class="field"><label>Overall Status</label><span class="status-badge">{escape(status)}</span></div>
     </div>
-    <h3 style="margin:20px 0 10px;color:#4472C4;">TC Summary</h3>
-    <table>
+    {highlights_section}
+    <h3 style="margin:28px 0 10px;color:#4472C4;">TC Summary</h3>
+    <table class="summary-table">
       <thead><tr><th>Status</th><th style="text-align:center;">Count</th></tr></thead>
       <tbody>{tc_rows_html}</tbody>
     </table>
+    {detail_table_html}
+    {defect_table_html}
     <div class="footer">Generated: {generated_at}</div>
   </div>
 </div>

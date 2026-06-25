@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>L1 Report – CloudRunner EB MVP2</title>
 <style>
+  *{box-sizing:border-box;}
   body{font-family:'Times New Roman',Times,serif;background:#f4f6f9;margin:0;padding:20px;}
-  .card{background:#fff;max-width:860px;margin:0 auto;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.1);overflow:hidden;}
+  .card{background:#fff;max-width:1200px;margin:0 auto;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.1);overflow:hidden;}
   .header{background:#4472C4;color:#fff;padding:24px 32px;}
   .header h1{margin:0;font-size:22px;}
   .header p{margin:4px 0 0;font-size:13px;opacity:.85;}
@@ -15,10 +16,15 @@
   .field label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;}
   .field span{font-size:14px;color:#222;}
   .status-badge{display:inline-block;padding:6px 18px;border-radius:20px;color:#fff;font-weight:bold;font-size:14px;background:#f39c12;}
-  table{width:100%;border-collapse:collapse;margin-top:8px;}
-  th{background:#4472C4;color:#fff;padding:10px 16px;text-align:left;font-size:13px;}
-  th:last-child{text-align:center;}
-  .footer{font-size:11px;color:#aaa;text-align:right;margin-top:20px;}
+  .summary-table{width:340px;border-collapse:collapse;margin-top:8px;}
+  .summary-table th{background:#4472C4;color:#fff;padding:9px 14px;text-align:left;font-size:13px;}
+  .summary-table td{border:1px solid #ddd;font-family:'Times New Roman',serif;font-size:13px;}
+  .footer{font-size:11px;color:#aaa;text-align:right;margin-top:24px;border-top:1px solid #eee;padding-top:8px;}
+  tbody tr:nth-child(even){background:#f9f9f9;}
+  tbody tr:hover{background:#eef3ff;}
+  table{border-collapse:collapse;}
+  table th{background:#4472C4;color:#fff;padding:10px;text-align:left;font-weight:bold;}
+  table td{border:1px solid #ddd;padding:8px;}
 </style>
 </head>
 <body>
@@ -38,15 +44,78 @@
       <div class="field"><label>Last Updated</label><span>06/25/2026 01:09 AM</span></div>
       <div class="field"><label>Overall Status</label><span class="status-badge">Behind</span></div>
     </div>
-    <h3 style="margin:20px 0 10px;color:#4472C4;">TC Summary</h3>
-    <table>
+    
+    <div style="margin:20px 0;padding:15px;background:#fff3cd;border-left:4px solid #ff9800;border-radius:4px;">
+      <strong style="color:#856404;font-size:13px;">⚠ Critical Highlights:</strong>
+      <p style="margin:6px 0 0;color:#856404;font-size:12px;line-height:1.5;">TS03 , TS02 , TS07 &amp; TS08 : Execution Completed.
+TS01 : Blocked by CDEX-525902: Assigned to COMS : Created 06/19 :  Need ETA
+CDEX-516926 : Assigned to ASF : Created 06/03 : Need ETA
+TS04 : Blocked by CDEX-519173 : Assigned to ASF :  Created 06/10 : ETA 06/
+TS02 : Blocked by CDEX-519170 : Assigned to ASF/COMS : Created 06/10 : ETA 06/25 EOD
+CDEX-524885 : Assigned to COMS : Created 06/17 : Need ETA
+TS05 &amp; TS06 : Execution Completed with Know issue CDEX-519315</p>
+    </div>
+    <div style="margin:12px 0;padding:15px;background:#ffebee;border-left:4px solid #d32f2f;border-radius:4px;">
+      <strong style="color:#c62828;font-size:13px;">🔴 Defect Summary:</strong>
+      <p style="margin:6px 0 0;color:#c62828;font-size:12px;line-height:1.5;">Severity: Open | Sev1: 4 | Sev2: 1 | Sev3: 0 | Total: 5</p>
+    </div>
+    <h3 style="margin:28px 0 10px;color:#4472C4;">TC Summary</h3>
+    <table class="summary-table">
       <thead><tr><th>Status</th><th style="text-align:center;">Count</th></tr></thead>
       <tbody><tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">Blocked</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">2</td></tr>
 <tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">Execution Completed</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">6</td></tr>
 <tr style="font-weight:bold;background:#f0f4ff;"><td style="padding:7px 14px;border:1px solid #ddd;">Total TCs</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">8</td></tr>
 </tbody>
     </table>
-    <div class="footer">Generated: 25 Jun 2026 01:21 PM</div>
+    
+    <h3 style="margin:28px 0 10px;color:#4472C4;">Detailed TC Execution</h3>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:#4472C4;color:#fff;"><th style="padding:8px 10px;white-space:nowrap;">Test Set</th><th style="padding:8px 10px;white-space:nowrap;">Test Case ID/Name</th><th style="padding:8px 10px;white-space:nowrap;">Test Case Description</th><th style="padding:8px 10px;white-space:nowrap;">Product</th><th style="padding:8px 10px;white-space:nowrap;">Planned Start Date</th><th style="padding:8px 10px;white-space:nowrap;">Planned End Date</th><th style="padding:8px 10px;white-space:nowrap;">Total Steps</th><th style="padding:8px 10px;white-space:nowrap;">Planned Steps</th><th style="padding:8px 10px;white-space:nowrap;">Passed Steps</th><th style="padding:8px 10px;white-space:nowrap;">Planned %</th><th style="padding:8px 10px;white-space:nowrap;">Passed %</th><th style="padding:8px 10px;white-space:nowrap;">Status</th><th style="padding:8px 10px;white-space:nowrap;">COMMENTS</th></tr></thead>
+      <tbody><tr><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add Site</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">TS01_ADI_Add Site_EB MVP2_ASF</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add Site to SE Contract</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">ADI</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">05/04/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">06/05/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">37</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">48.7%</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:#e74c3c;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">Blocked</span></td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title="Blocked by CDEX-525902">Blocked by CDEX-525902</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add Site</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">TS02_ADI_Add Site_EB MVP2_ASF</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add Site to SE Contract w/ DD</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">ADI</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">05/05/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">06/05/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:#27ae60;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">Execution Completed</span></td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title="Execution Completed
+Identified issue ; CDEX-519170 &amp; CDEX-524885">Execution Completed
+Identified issue ; CDEX-519170 &amp; CDEX-524885</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add Site</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">TS03_ADI_Add Site_EB MVP2_ASF</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add Site to ASAP, Standard Contract</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">ADI</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">05/04/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">06/05/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:#27ae60;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">Execution Completed</span></td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title="Execution Completed
+Identified issue ; CDEX-517905 &amp; CDEX-516926">Execution Completed
+Identified issue ; CDEX-517905 &amp; CDEX-516926</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add Site</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">TS04_ADI_Add Site_EB MVP2_ASF</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add Site on ASAP Enterprise Customer, ICB Priced Contract</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">ADI</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">05/07/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">06/05/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">70</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">92.1%</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:#e74c3c;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">Blocked</span></td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title="Blocked by CDEX-516926 , CDEX-519173 &amp; CDEX-517905">Blocked by CDEX-516926 , CDEX-519173 &amp; CDEX-517905</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add Site</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">TS05_ADI_Add Site_EB MVP2_ASF</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add Site on ASF contract (from Cust 360)</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">ADI</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">05/11/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">06/05/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:#27ae60;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">Execution Completed</span></td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title="Execution Completed">Execution Completed</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">ADD DD MACD</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">TS06_ADI_MACD_EB MVP2_ASF</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Add DD to Existing ADI Site, with no Contract Update</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">ADI</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">05/11/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">06/05/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">76</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:#27ae60;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">Execution Completed</span></td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title="Execution Completed">Execution Completed</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Cancel</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">TS07_ADI_Cancel_EB MVP2_ASF</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Cancel ADI on Add Site order </td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">ADI</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">05/13/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">06/05/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">10</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">10</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">10</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:#27ae60;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">Execution Completed</span></td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title="Execution Completed">Execution Completed</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Supp CRDD</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">TS06_ADI_Supp CRDD_EB MVP2_ASF</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Supp CRDD on Add Site order </td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">ADI</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">05/13/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">06/05/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">10</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">10</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">10</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:#27ae60;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">Execution Completed</span></td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title="Execution Completed">Execution Completed</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">total add site</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"></td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"></td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"></td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"></td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"></td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">380</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">380</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">335</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">88.2%</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:#7f8c8d;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;"></span></td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title=""></td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">Total :</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"></td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"></td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"></td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"></td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"></td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">476</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">476</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">431</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">100.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">90.5%</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:#7f8c8d;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;"></span></td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title=""></td></tr>
+</tbody>
+    </table>
+    </div>
+    
+    <h3 style="margin:28px 0 10px;color:#d32f2f;">Defect Log</h3>
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead><tr style="background:#d32f2f;color:#fff;"><th style="padding:8px 10px;white-space:nowrap;">CDEX-516926</th><th style="padding:8px 10px;white-space:nowrap;">Sev1</th></tr></thead>
+      <tbody><tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-519173</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-519170</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-524885</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-525902</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-510685</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev2</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-526992</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-525690</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-517905</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-520390</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-519315</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev2</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-518390</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-511337</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-516395</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-509970</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;"> CDEX-509301</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-509654</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-507206</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+<tr><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">CDEX-508793</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;">Sev1</td></tr>
+</tbody>
+    </table>
+    </div>
+    <div class="footer">Generated: 25 Jun 2026 01:31 PM</div>
   </div>
 </div>
 </body>
