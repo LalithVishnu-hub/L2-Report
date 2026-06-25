@@ -290,7 +290,7 @@ def read_overall_project_status(file_path):
         
         # Extract DEFECT SUMMARY section (row 29 onwards)
         defect_summary_lines = []
-        critical_highlights_lines = []
+        critical_highlights_text = []
         in_defect_section = False
         in_critical_section = False
         
@@ -317,16 +317,17 @@ def read_overall_project_status(file_path):
             if in_defect_section and col0 and col1:
                 defect_summary_lines.append(f"{col0}: {col1}")
             
-            # Collect critical highlights
+            # Collect critical highlights as sentences (skip empty cells)
             if in_critical_section and col0:
-                if col0 not in ['', 'CRITICAL HIGHLIGHTS as of']:
-                    critical_highlights_lines.append(col0)
+                if col0.strip() and col0 not in ['', 'CRITICAL HIGHLIGHTS as of']:
+                    critical_highlights_text.append(col0.strip())
         
         if defect_summary_lines:
             data['defect_summary'] = ' | '.join(defect_summary_lines[:5])  # Limit to 5 entries
         
-        if critical_highlights_lines:
-            data['critical_highlights'] = ' '.join(critical_highlights_lines[:3])  # First 3 lines
+        if critical_highlights_text:
+            # Join with space to create flowing text (not truncated)
+            data['critical_highlights'] = ' '.join(critical_highlights_text)
     
     except Exception:
         pass
@@ -335,16 +336,23 @@ def read_overall_project_status(file_path):
 
 
 def read_defect_log(file_path):
-    """Read Defect Log sheet with all relevant columns."""
+    """Read Defect Log sheet with all relevant columns. Only include rows with Defect ID."""
     rows = []
     try:
         df = pd.read_excel(file_path, sheet_name='Defect Log', header=1, nrows=50)
         df.columns = [str(c).strip() for c in df.columns]
         
+        # Find defect ID column (fuzzy match)
+        defect_id_col = next((c for c in df.columns if 'defect' in c.lower() or 'cdex' in c.lower()), None)
+        
         # Use all columns available in the sheet (or limit to first 10)
         keep_cols = list(df.columns)[:10] if len(df.columns) > 0 else []
         
         for _, row in df.iterrows():
+            # Only include rows where Defect ID is present and not empty
+            if defect_id_col and (pd.isna(row[defect_id_col]) or str(row[defect_id_col]).strip() == ''):
+                continue
+            
             cells = {}
             for col in keep_cols:
                 val = row[col] if col in df.columns else ''
@@ -393,7 +401,7 @@ def generate_l1_static_page(project, file_path):
         tc_rows_html = '<tr><td colspan="2" style="padding:8px;text-align:center;color:#888;">No TC Summary data available</td></tr>'
 
     # Detailed TC table
-    detail_headers_html = ''.join(f'<th style="padding:8px 10px;white-space:nowrap;">{escape(h)}</th>' for h in detail_headers)
+    detail_headers_html = ''.join(f'<th style="padding:8px 10px;white-space:nowrap;text-align:center;">{escape(h)}</th>' for h in detail_headers)
     detail_rows_html = ''
     for row in detail_rows:
         status_val = ''
@@ -403,13 +411,13 @@ def generate_l1_static_page(project, file_path):
             if col.lower() == 'status':
                 status_val = cell
                 sc = _status_color(cell)
-                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:{sc};color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">{escape(cell)}</span></td>'
+                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;"><span style="background:{sc};color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">{escape(cell)}</span></td>'
             elif 'comment' in col.lower():
                 short = (cell[:100] + '…') if len(cell) > 100 else cell
-                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:280px;word-wrap:break-word;white-space:normal;" title="{escape(cell)}">{escape(short)}</td>'
+                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:280px;word-wrap:break-word;white-space:normal;text-align:center;" title="{escape(cell)}">{escape(short)}</td>'
             elif 'description' in col.lower():
                 short = (cell[:100] + '…') if len(cell) > 100 else cell
-                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:220px;word-wrap:break-word;white-space:normal;" title="{escape(cell)}">{escape(short)}</td>'
+                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:220px;word-wrap:break-word;white-space:normal;text-align:center;" title="{escape(cell)}">{escape(short)}</td>'
             elif '%' in col:
                 try:
                     fval = float(cell)
@@ -418,7 +426,7 @@ def generate_l1_static_page(project, file_path):
                 except Exception:
                     cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">{escape(cell)}</td>'
             else:
-                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">{escape(cell)}</td>'
+                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">{escape(cell)}</td>'
         detail_rows_html += f'<tr>{cells_html}</tr>\n'
 
     if not detail_rows_html:
@@ -430,7 +438,7 @@ def generate_l1_static_page(project, file_path):
     defect_rows_html = ''
     if defect_log_rows:
         cols = list(defect_log_rows[0].keys())
-        defect_headers_html = ''.join(f'<th style="padding:8px 10px;white-space:normal;max-width:120px;">{escape(h)}</th>' for h in cols)
+        defect_headers_html = ''.join(f'<th style="padding:8px 10px;white-space:normal;max-width:120px;text-align:center;">{escape(h)}</th>' for h in cols)
         for row in defect_log_rows:
             cells_html = ''
             for col in cols:
@@ -438,13 +446,13 @@ def generate_l1_static_page(project, file_path):
                 # Allow wrapping for description and comments columns
                 if 'description' in col.lower() or 'comment' in col.lower():
                     short = (cell_val[:80] + '…') if len(cell_val) > 80 else cell_val
-                    cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:180px;word-wrap:break-word;white-space:normal;" title="{escape(cell_val)}">{escape(short)}</td>'
+                    cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:180px;word-wrap:break-word;white-space:normal;text-align:center;" title="{escape(cell_val)}">{escape(short)}</td>'
                 else:
                     short = (cell_val[:60] + '…') if len(cell_val) > 60 else cell_val
-                    cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:100px;word-wrap:break-word;white-space:normal;">{escape(short)}</td>'
+                    cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:100px;word-wrap:break-word;white-space:normal;text-align:center;">{escape(short)}</td>'
             defect_rows_html += f'<tr>{cells_html}</tr>\n'
         if not defect_rows_html:
-            defect_rows_html = f'<tr><td colspan="{len(cols)}" style="padding:10px;text-align:center;color:#888;">No defects logged</td></tr>'
+            defect_rows_html = f'<tr><td colspan="{len(cols)}" style="padding:10px;text-align:center;color:#888;">No defects with IDs found</td></tr>'
     
     # Critical highlights and defect summary
     highlights_section = ''
