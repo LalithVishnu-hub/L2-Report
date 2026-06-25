@@ -155,38 +155,50 @@ def parse_project_info_from_filename(filename):
     return project_id, project_name, file_date, dashboard_route
 
 
-def extract_tc_summary_compact(file_path):
-    """Build compact TC summary from the 'TC Summary' sheet."""
-    status_map = {}
-    statuses = [
-        'Completed',
-        'Execution Complete/Uploaded for review',
-        'Blocked',
-        'Failed',
-        'On Hold',
-        'In Progress',
-        'Not Started',
-        'Deferred',
-        'Descoped',
-        'Total TCs'
-    ]
-
+def _find_tc_sheet(file_path):
+    """Return the 'Detailed TC Summary' sheet name (handles trailing spaces)."""
     try:
-        tc_df = pd.read_excel(file_path, sheet_name='TC Summary', header=None)
-        for _, row in tc_df.iterrows():
-            label = str(row.iloc[0]).strip() if len(row) > 0 and pd.notna(row.iloc[0]) else ''
-            value = str(row.iloc[1]).strip() if len(row) > 1 and pd.notna(row.iloc[1]) else ''
-            if label in statuses and value:
-                status_map[label] = value
+        xl = pd.ExcelFile(file_path)
+        for name in xl.sheet_names:
+            if name.strip().lower() == 'detailed tc summary':
+                return name
     except Exception:
+        pass
+    return None
+
+
+def _count_tc_statuses(file_path):
+    """Count TCs by Status from Detailed TC Summary sheet. Returns dict of status->count."""
+    sheet = _find_tc_sheet(file_path)
+    if not sheet:
+        return {}
+    try:
+        df = pd.read_excel(file_path, sheet_name=sheet, header=2)
+        # Normalize column names (strip whitespace/newlines)
+        df.columns = [str(c).strip().replace('\n', ' ') for c in df.columns]
+        status_col = next((c for c in df.columns if c.strip().lower() == 'status'), None)
+        if not status_col:
+            return {}
+        counts = {}
+        for val in df[status_col].dropna():
+            v = str(val).strip()
+            if v:
+                counts[v] = counts.get(v, 0) + 1
+        return counts
+    except Exception:
+        return {}
+
+
+def extract_tc_summary_compact(file_path):
+    """Build compact TC summary by counting Status from Detailed TC Summary sheet."""
+    counts = _count_tc_statuses(file_path)
+    if not counts:
         return 'N/A'
-
-    total = status_map.get('Total TCs', '0')
-    completed = status_map.get('Completed', '0')
-    in_progress = status_map.get('In Progress', '0')
-    blocked = status_map.get('Blocked', '0')
-    failed = status_map.get('Failed', '0')
-
+    total = sum(counts.values())
+    completed = counts.get('Completed', 0) + counts.get('Execution Complete/Uploaded for review', 0)
+    in_progress = counts.get('In Progress', 0)
+    blocked = counts.get('Blocked', 0)
+    failed = counts.get('Failed', 0)
     return f"T:{total} | C:{completed} | IP:{in_progress} | B:{blocked} | F:{failed}"
 
 
@@ -204,47 +216,130 @@ def build_l1_detail_link(project_id, project_name, dashboard_route):
 
 
 def extract_tc_summary_full(file_path):
-    """Read full TC Summary sheet into list of (label, value) pairs."""
-    statuses = [
-        'Total TCs', 'Completed', 'Execution Complete/Uploaded for review',
-        'In Progress', 'Blocked', 'Failed', 'On Hold', 'Not Started',
-        'Deferred', 'Descoped',
+    """Return list of (status_label, count) from Detailed TC Summary sheet."""
+    counts = _count_tc_statuses(file_path)
+    if not counts:
+        return []
+    total = sum(counts.values())
+    order = [
+        'Completed', 'Execution Complete/Uploaded for review', 'In Progress',
+        'Blocked', 'Failed', 'On Hold', 'Not Started', 'Deferred', 'Descoped',
     ]
     rows = []
-    try:
-        tc_df = pd.read_excel(file_path, sheet_name='TC Summary', header=None)
-        for _, row in tc_df.iterrows():
-            label = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else ''
-            value = str(row.iloc[1]).strip() if len(row) > 1 and pd.notna(row.iloc[1]) else ''
-            if label in statuses:
-                rows.append((label, value if value else '0'))
-    except Exception:
-        pass
+    seen = set()
+    for label in order:
+        if label in counts:
+            rows.append((label, str(counts[label])))
+            seen.add(label)
+    # Any remaining statuses not in the ordered list
+    for label, cnt in counts.items():
+        if label not in seen:
+            rows.append((label, str(cnt)))
+    rows.append(('Total TCs', str(total)))
     return rows
+
+
+def read_detailed_tc_rows(file_path):
+    """Read the full Detailed TC Summary table rows for the static L1 page."""
+    sheet = _find_tc_sheet(file_path)
+    if not sheet:
+        return [], []
+    try:
+        df = pd.read_excel(file_path, sheet_name=sheet, header=2)
+        df.columns = [str(c).strip().replace('\n', ' ') for c in df.columns]
+        keep_cols = ['Test Set', 'Test Case ID/Name', 'Product', 'Planned  Start Date',
+                     'Planned  End Date', 'Total  Steps', 'Passed Steps', 'Planned %', 'Passed %', 'Status', 'COMMENTS']
+        # Fuzzy match: pick columns whose stripped name appears in keep_cols
+        selected = []
+        for col in df.columns:
+            norm = col.strip().replace('\n', ' ').replace('  ', ' ')
+            if any(norm.lower() == k.lower() or norm.lower().startswith(k.lower().split()[0]) for k in keep_cols):
+                if col not in selected:
+                    selected.append(col)
+        if not selected:
+            selected = list(df.columns)
+        # Only rows that have a Status value
+        df_clean = df[selected].dropna(how='all')
+        # Format date columns
+        for col in selected:
+            if 'date' in col.lower() or 'start' in col.lower() or 'end' in col.lower():
+                df_clean = df_clean.copy()
+                df_clean[col] = df_clean[col].apply(
+                    lambda v: pd.Timestamp(v).strftime('%m/%d/%Y') if pd.notna(v) and str(v) != 'nan' else '')
+        # Clean headers for display
+        display_headers = [c.strip().replace('  ', ' ') for c in selected]
+        rows = []
+        for _, row in df_clean.iterrows():
+            cells = [str(v) if pd.notna(v) and str(v) != 'nan' else '' for v in row]
+            if any(cells):
+                rows.append(cells)
+        return display_headers, rows
+    except Exception:
+        return [], []
+
+
+def _status_color(status):
+    s = str(status).lower()
+    if 'blocked' in s: return '#e74c3c'
+    if 'in progress' in s or 'on schedule' in s or 'ahead' in s or 'completed' in s and 'execution' in s: return '#27ae60'
+    if 'completed' in s: return '#3498db'
+    if 'behind' in s: return '#f39c12'
+    if 'not started' in s: return '#95a5a6'
+    if 'failed' in s: return '#c0392b'
+    if 'on hold' in s or 'deferred' in s: return '#e67e22'
+    return '#7f8c8d'
 
 
 def generate_l1_static_page(project, file_path):
     """Generate a self-contained static HTML page for one L1 project."""
-    tc_rows = extract_tc_summary_full(file_path)
+    tc_summary_rows = extract_tc_summary_full(file_path)
+    detail_headers, detail_rows = read_detailed_tc_rows(file_path)
     status = str(project.get('overall_status', 'N/A')).strip()
-    status_lower = status.lower()
-    if 'blocked' in status_lower:
-        status_color = '#e74c3c'
-    elif 'in progress' in status_lower or 'on schedule' in status_lower or 'ahead' in status_lower:
-        status_color = '#27ae60'
-    elif 'completed' in status_lower:
-        status_color = '#3498db'
-    elif 'behind' in status_lower:
-        status_color = '#f39c12'
-    else:
-        status_color = '#7f8c8d'
+    status_color = _status_color(status)
 
+    # TC Summary table rows
     tc_rows_html = ''
-    for label, value in tc_rows:
-        tc_rows_html += f'<tr><td style="padding:8px 16px;border:1px solid #ddd;font-family:\'Times New Roman\',serif;">{escape(label)}</td><td style="padding:8px 16px;border:1px solid #ddd;text-align:center;font-weight:bold;font-family:\'Times New Roman\',serif;">{escape(value)}</td></tr>\n'
-
+    for label, value in tc_summary_rows:
+        is_total = label == 'Total TCs'
+        style = 'font-weight:bold;background:#f0f4ff;' if is_total else ''
+        tc_rows_html += (
+            f'<tr style="{style}">' 
+            f'<td style="padding:7px 14px;border:1px solid #ddd;">{escape(label)}</td>'
+            f'<td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">{escape(value)}</td>'
+            f'</tr>\n'
+        )
     if not tc_rows_html:
         tc_rows_html = '<tr><td colspan="2" style="padding:8px;text-align:center;color:#888;">No TC Summary data available</td></tr>'
+
+    # Detailed TC table
+    detail_headers_html = ''.join(f'<th style="padding:8px 10px;white-space:nowrap;">{escape(h)}</th>' for h in detail_headers)
+    detail_rows_html = ''
+    for row in detail_rows:
+        status_val = ''
+        cells_html = ''
+        for i, cell in enumerate(row):
+            col = detail_headers[i] if i < len(detail_headers) else ''
+            if col.lower() == 'status':
+                status_val = cell
+                sc = _status_color(cell)
+                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;"><span style="background:{sc};color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">{escape(cell)}</span></td>'
+            elif 'comment' in col.lower():
+                short = (cell[:80] + '…') if len(cell) > 80 else cell
+                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:200px;" title="{escape(cell)}">{escape(short)}</td>'
+            elif '%' in col:
+                try:
+                    fval = float(cell)
+                    pct = f"{fval*100:.1f}%" if fval <= 1 else f"{fval:.1f}%"
+                    cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">{pct}</td>'
+                except Exception:
+                    cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">{escape(cell)}</td>'
+            else:
+                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;">{escape(cell)}</td>'
+        detail_rows_html += f'<tr>{cells_html}</tr>\n'
+
+    if not detail_rows_html:
+        colspan = max(len(detail_headers), 1)
+        detail_rows_html = f'<tr><td colspan="{colspan}" style="padding:10px;text-align:center;color:#888;">No detailed TC data available</td></tr>'
 
     generated_at = datetime.now().strftime('%d %b %Y %I:%M %p')
 
@@ -560,7 +655,7 @@ def generate_l2_report_html(projects_data):
                         <th>Project ID</th>
                         <th>UFD #</th>
                         <th>Project Name</th>
-                        <th>TC Summary</th>
+                        <th style="width:130px;">TC Summary</th>
                         <th>Plan Start</th>
                         <th>Plan End</th>
                         <th>Planned %</th>
@@ -579,7 +674,7 @@ def generate_l2_report_html(projects_data):
         html += f'                    <td>{project["project_id"]}</td>\n'
         html += f'                    <td>{project["ufd_number"]}</td>\n'
         html += f'                    <td>{project["project_name"]}</td>\n'
-        html += f'                    <td>{project["tc_summary_compact"]}</td>\n'
+        html += f'                    <td style="font-size:10px;white-space:nowrap;width:130px;max-width:130px;">{project["tc_summary_compact"]}</td>\n'
         html += f'                    <td>{project["plan_start"]}</td>\n'
         html += f'                    <td>{project["plan_end"]}</td>\n'
         html += f'                    <td>{project["planned_pct"]}</td>\n'
