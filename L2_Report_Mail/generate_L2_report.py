@@ -35,7 +35,10 @@ EMAIL_SIGNATURE = os.getenv('EMAIL_SIGNATURE', 'Thanks & Regards,\nLalith Vishnu
 
 def format_email_text(text):
     """Escape and preserve line breaks for configurable email text."""
-    return '<br/>'.join(escape(str(text or '')).splitlines())
+    text_str = str(text or '')
+    # Handle both literal newlines and \n escapes from .env
+    text_str = text_str.replace('\\n', '\n')  # Convert escaped \n to actual newline
+    return '<br/>'.join(escape(line) for line in text_str.split('\n'))
 
 def extract_date_from_filename(filename):
     """Extract date from filename and convert to datetime object.
@@ -276,6 +279,52 @@ def read_detailed_tc_rows(file_path):
         return display_headers, rows
     except Exception:
         return [], []
+
+
+def read_overall_project_status(file_path):
+    """Extract critical highlights and defect summary from Overall Project Status sheet."""
+    sheet = 'Overall Project Status'
+    data = {'critical_highlights': '', 'defect_summary': ''}
+    try:
+        df = pd.read_excel(file_path, sheet_name=sheet, header=None, nrows=50)
+        for i, row in df.iterrows():
+            if len(row) < 2:
+                continue
+            col0 = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else ''
+            col1 = str(row.iloc[1]).strip() if len(row) > 1 and pd.notna(row.iloc[1]) else ''
+            if col0 and col1:
+                if 'critical highlight' in col0.lower():
+                    data['critical_highlights'] = col1
+                elif 'defect summ' in col0.lower():
+                    data['defect_summary'] = col1
+    except Exception:
+        pass
+    return data
+
+
+def read_defect_log(file_path):
+    """Read Defect Log sheet into list of dicts with key columns."""
+    rows = []
+    try:
+        df = pd.read_excel(file_path, sheet_name='Defect Log', header=1, nrows=50)
+        df.columns = [str(c).strip() for c in df.columns]
+        # Find key columns by fuzzy matching
+        defect_col = next((c for c in df.columns if 'defect' in c.lower() or 'cdex' in c.lower()), None)
+        sev_col = next((c for c in df.columns if 'sev' in c.lower()), None)
+        status_col = next((c for c in df.columns if c.lower() == 'status'), None)
+        desc_col = next((c for c in df.columns if 'description' in c.lower() or 'title' in c.lower()), None)
+        
+        keep_cols = [c for c in [defect_col, sev_col, status_col, desc_col] if c]
+        if not keep_cols:
+            keep_cols = list(df.columns)[:4] if len(df.columns) >= 4 else list(df.columns)
+        
+        for _, row in df.iterrows():
+            cells = {col: str(row[col])[:80] if pd.notna(row[col]) else '' for col in keep_cols if col in df.columns}
+            if any(cells.values()):
+                rows.append(cells)
+    except Exception:
+        pass
+    return rows
 
 
 def _status_color(status):
