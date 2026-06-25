@@ -326,8 +326,13 @@ def read_overall_project_status(file_path):
             data['defect_summary'] = ' | '.join(defect_summary_lines[:5])  # Limit to 5 entries
         
         if critical_highlights_text:
-            # Join with space to create flowing text (not truncated)
-            data['critical_highlights'] = ' '.join(critical_highlights_text)
+            # Replace newlines with <br/> within each line, then join between items
+            lines_with_br = [line.replace('\n', '<br/>').replace('\r', '') for line in critical_highlights_text]
+            joined = '<br/>'.join(lines_with_br)
+            # Collapse multiple consecutive <br/> tags to single <br/>
+            import re
+            joined = re.sub(r'(<br/>){2,}', '<br/>', joined)
+            data['critical_highlights'] = joined
     
     except Exception:
         pass
@@ -339,7 +344,7 @@ def read_defect_log(file_path):
     """Read Defect Log sheet with all relevant columns. Only include rows with Defect ID."""
     rows = []
     try:
-        df = pd.read_excel(file_path, sheet_name='Defect Log', header=1, nrows=50)
+        df = pd.read_excel(file_path, sheet_name='Defect Log', header=0, nrows=100, index_col=False)
         df.columns = [str(c).strip() for c in df.columns]
         
         # Find defect ID column (fuzzy match)
@@ -457,10 +462,13 @@ def generate_l1_static_page(project, file_path):
     # Critical highlights and defect summary
     highlights_section = ''
     if project_status.get('critical_highlights'):
+        # Split by <br/>, escape each line, rejoin - preserves line breaks while escaping content
+        highlight_lines = project_status["critical_highlights"].split('<br/>')
+        escaped_highlights = '<br/>'.join(escape(line) for line in highlight_lines)
         highlights_section += f'''
     <div style="margin:20px 0;padding:15px;background:#fff3cd;border-left:4px solid #ff9800;border-radius:4px;">
       <strong style="color:#856404;font-size:13px;">⚠ Critical Highlights:</strong>
-      <p style="margin:6px 0 0;color:#856404;font-size:12px;line-height:1.5;">{escape(project_status["critical_highlights"])}</p>
+      <p style="margin:6px 0 0;color:#856404;font-size:12px;line-height:1.5;">{escaped_highlights}</p>
     </div>'''
     if project_status.get('defect_summary'):
         highlights_section += f'''
