@@ -466,7 +466,7 @@ def generate_l1_static_page(project, file_path):
     detail_table_html = ''
     if detail_headers:
         detail_table_html = f'''
-    <h3 style="margin:28px 0 10px;color:#4472C4;">Detailed TC Execution</h3>
+    <h3 style="margin:16px 0 10px;color:#4472C4;">Detailed TC Execution</h3>
     <div style="overflow-x:auto;">
     <table style="width:100%;border-collapse:collapse;font-size:12px;">
       <thead><tr style="background:#4472C4;color:#fff;">{detail_headers_html}</tr></thead>
@@ -477,7 +477,7 @@ def generate_l1_static_page(project, file_path):
     defect_table_html = ''
     if defect_log_rows:
         defect_table_html = f'''
-    <h3 style="margin:28px 0 10px;color:#d32f2f;">Defect Log</h3>
+    <h3 style="margin:16px 0 10px;color:#d32f2f;">Defect Log</h3>
     <div style="overflow-x:auto;">
     <table style="width:100%;border-collapse:collapse;font-size:12px;">
       <thead><tr style="background:#d32f2f;color:#fff;">{defect_headers_html}</tr></thead>
@@ -506,7 +506,7 @@ def generate_l1_static_page(project, file_path):
   .summary-table{{width:340px;border-collapse:collapse;margin-top:8px;}}
   .summary-table th{{background:#4472C4;color:#fff;padding:9px 14px;text-align:left;font-size:13px;}}
   .summary-table td{{border:1px solid #ddd;font-family:'Times New Roman',serif;font-size:13px;}}
-  .footer{{font-size:11px;color:#aaa;text-align:right;margin-top:24px;border-top:1px solid #eee;padding-top:8px;}}
+  .footer{{font-size:11px;color:#aaa;text-align:right;margin-top:12px;border-top:1px solid #eee;padding-top:6px;}}
   tbody tr:nth-child(even){{background:#f9f9f9;}}
   tbody tr:hover{{background:#eef3ff;}}
   table{{border-collapse:collapse;}}
