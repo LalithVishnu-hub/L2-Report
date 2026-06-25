@@ -1,0 +1,16 @@
+﻿# Never commit secrets or local env files
+.env
+**/.env
+*.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs (keep folder, not files)
+logs/*.log
+
+# Virtual environments
+.venv/
+venv/

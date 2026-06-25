@@ -13,10 +13,26 @@ Edit these values in `.env` file or below:
 ```
 EMAIL_SUBJECT=L2 Project Dashboard Report - ETE Status Update
 ```
+Optional alias (if you prefer the word "submit"):
+```
+EMAIL_SUBMIT=L2 Project Dashboard Report - ETE Status Update
+```
 **Customize to:** Any subject line you prefer
 - Example 1: `L2 Daily Report - Project Status`
 - Example 2: `ETE Project Dashboard - Daily Update`
 - Example 3: `Project Status Summary Report`
+
+### Editable Greeting, Intro, Footer, Signature (No code changes)
+Set these in `.env`:
+```env
+EMAIL_GREETING=Hi All,
+EMAIL_INTRO_MESSAGE=Please find below the L2 Project Dashboard for ETE Wireline Projects.
+EMAIL_FOOTER=This report is automatically generated and sent daily. For any questions or clarifications regarding the projects listed above, please reach out to the respective Test Lead or Test Manager.
+EMAIL_SIGNATURE=Thanks & Regards,\nLalith Vishnu. S
+```
+Notes:
+- `\n` in `EMAIL_SIGNATURE` is rendered as a new line in the email.
+- These values are inserted into the generated HTML report.
 
 ---
 
@@ -159,6 +175,11 @@ EMAIL_SUBJECT=L2 Project Dashboard Report - ETE Status Update
    - `SCHEDULER_HOUR=23` and `SCHEDULER_MINUTE=59` → 11:59 PM
 
 3. Restart the scheduler
+
+### Important Scheduler Behavior (Windows Task Scheduler)
+- Sleep mode: Supported via wake timers + task `WakeToRun`.
+- Shutdown/off: Exact-time execution is not possible on a powered-off local PC.
+- If exact-time execution while PC is off is mandatory, use GitHub Actions scheduler (`.github/workflows/l2-report-daily.yml`).
 
 ---
 

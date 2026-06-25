@@ -1,71 +1,60 @@
-name: L2 Project Dashboard Report - Daily Email
+name: L2 Report Daily (Cloud Scheduler)
 
 on:
   schedule:
-    # Runs daily at 12:00 AM IST (18:30 UTC previous day)
+    # Daily 00:00 IST = 18:30 UTC (previous day)
     - cron: '30 18 * * *'
-  
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
-  generate-and-send-report:
+  generate-and-send:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      
-      - name: Set up Python
+
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas openpyxl python-dotenv
-      
-      - name: Create .env file from secrets
+          pip install -r requirements.txt
+
+      - name: Build runtime .env from secrets
         run: |
           cat > .env << EOF
-          OFFICE365_REFRESH_TOKEN=${{ secrets.OFFICE365_REFRESH_TOKEN }}
+          EMAIL_FROM=${{ secrets.EMAIL_FROM }}
           EMAIL_TO=${{ secrets.EMAIL_TO }}
-          EMAIL_FROM=lalvishn@in.ibm.com
-          EMAIL_SUBJECT=L2 Project Dashboard Report - ETE Status Update
+          EMAIL_SUBJECT=${{ secrets.EMAIL_SUBJECT }}
+          EMAIL_SUBMIT=${{ secrets.EMAIL_SUBMIT }}
+          EMAIL_GREETING=${{ secrets.EMAIL_GREETING }}
+          EMAIL_INTRO_MESSAGE=${{ secrets.EMAIL_INTRO_MESSAGE }}
+          EMAIL_FOOTER=${{ secrets.EMAIL_FOOTER }}
+          EMAIL_SIGNATURE=${{ secrets.EMAIL_SIGNATURE }}
+          SMTP_SERVER=${{ secrets.SMTP_SERVER }}
+          SMTP_PORT=${{ secrets.SMTP_PORT }}
+          SMTP_USER=${{ secrets.SMTP_USER }}
+          SMTP_PASS=${{ secrets.SMTP_PASS }}
+          SMTP_USE_TLS=${{ secrets.SMTP_USE_TLS }}
+          SMTP_USE_AUTH=${{ secrets.SMTP_USE_AUTH }}
+          BOX_LOCAL_PATH=${{ secrets.BOX_LOCAL_PATH }}
+          L1_DASHBOARD_BASE_URL=${{ secrets.L1_DASHBOARD_BASE_URL }}
           EOF
-      
-      - name: Generate L2 Report
-        run: |
-          python generate_L2_report.py
-      
-      - name: Send email via Office 365
-        run: |
-          python send_l2_report_office365.py
-      
-      - name: Upload report as artifact
+
+      - name: Generate L2 report HTML
+        run: python L2_Report_Mail/generate_L2_report.py
+
+      - name: Send L2 report via SMTP
+        run: python L2_Report_Mail/send_l2_report_smtp.py
+
+      - name: Upload generated report
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: L2-Report-${{ github.run_id }}
-          path: L2_Report.html
+          name: l2-report-${{ github.run_id }}
+          path: html_reports/L2_Report.html
           retention-days: 30
-        with:
-          name: L2-Report-${{ github.run_id }}
-          path: L2_Report.html
-          retention-days: 30
-      
-      - name: Check for errors in logs
-        if: failure()
-        run: |
-          echo "Report generation or sending failed. Check workflow logs above."
-          exit 1
-
-  notify-on-failure:
-    runs-on: ubuntu-latest
-    needs: generate-and-send-report
-    if: failure()
-    
-    steps:
-      - name: Send failure notification
-        run: |
-          echo "L2 Report workflow failed. Check GitHub Actions logs."

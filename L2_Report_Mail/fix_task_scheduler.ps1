@@ -1,4 +1,4 @@
-# Fix Task Scheduler - Reads time from .env configuration
+# Fix Task Scheduler - reads time from .env and creates a robust task for L2 report email
 # Run with Administrator privileges
 
 Write-Host "=========================================="
@@ -12,23 +12,46 @@ $principal = New-Object System.Security.Principal.WindowsPrincipal($currentUser)
 $adminRole = [System.Security.Principal.WindowsBuiltInRole]::Administrator
 
 if (-not $principal.IsInRole($adminRole)) {
-    Write-Host "ERROR: This script requires Administrator privileges!"
-    Write-Host "Please run PowerShell as Administrator and try again."
-    exit 1
+    Write-Host "Administrator privileges are required. Requesting elevation..."
+    try {
+        $scriptPath = $MyInvocation.MyCommand.Path
+        Start-Process -FilePath "powershell.exe" `
+            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `""$scriptPath`""" `
+            -Verb RunAs `
+            -ErrorAction Stop | Out-Null
+        Write-Host "UAC prompt opened. Approve it to continue scheduler setup."
+        exit 0
+    }
+    catch {
+        Write-Host "ERROR: Could not elevate automatically: $_"
+        Write-Host "Please run PowerShell as Administrator and re-run this script."
+        exit 1
+    }
 }
 
 Write-Host "Admin privileges verified"
 Write-Host ""
 
+$taskName = "L2 Project Dashboard Report"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$projectRoot = Split-Path -Parent $scriptDir
+$envPath = Join-Path $projectRoot ".env"
+$batchFilePath = Join-Path $scriptDir "run_l2_report.bat"
+$runAsUser = "$env:USERDOMAIN\$env:USERNAME"
+
+if (-not (Test-Path $batchFilePath)) {
+    Write-Host "ERROR: Batch file not found: $batchFilePath"
+    exit 1
+}
+
 # Remove old task if it exists
 Write-Host "Checking for existing task..."
-$taskExists = Get-ScheduledTask -TaskName "L2 Project Dashboard Report" -ErrorAction SilentlyContinue
+$taskExists = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
 if ($taskExists) {
     Write-Host "Removing old task..."
     try {
-        Unregister-ScheduledTask -TaskName "L2 Project Dashboard Report" -Confirm:$false -ErrorAction Stop
+        Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction Stop
         Write-Host "Old task removed successfully"
-        Start-Sleep -Seconds 1
     }
     catch {
         Write-Host "ERROR: Could not remove old task: $_"
@@ -42,57 +65,67 @@ else {
 Write-Host ""
 
 # Read scheduler time from .env file
-$envPath = "C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\.env"
 $schedulerHour = 0
 $schedulerMinute = 30
 
 if (Test-Path $envPath) {
     $envContent = Get-Content $envPath -Raw
-    
-    # Extract SCHEDULER_HOUR
+
     if ($envContent -match 'SCHEDULER_HOUR\s*=\s*(\d+)') {
         $schedulerHour = [int]$matches[1]
     }
-    
-    # Extract SCHEDULER_MINUTE
+
     if ($envContent -match 'SCHEDULER_MINUTE\s*=\s*(\d+)') {
         $schedulerMinute = [int]$matches[1]
     }
-    
+
+    if ($schedulerHour -lt 0 -or $schedulerHour -gt 23) {
+        Write-Host "WARNING: Invalid SCHEDULER_HOUR in .env. Using default 00."
+        $schedulerHour = 0
+    }
+
+    if ($schedulerMinute -lt 0 -or $schedulerMinute -gt 59) {
+        Write-Host "WARNING: Invalid SCHEDULER_MINUTE in .env. Using default 30."
+        $schedulerMinute = 30
+    }
+
     Write-Host "Read from .env: Hour=$schedulerHour, Minute=$schedulerMinute"
 }
 else {
     Write-Host "WARNING: .env file not found, using default 12:30 AM"
 }
 
-# Format time as HH:MM:SS
-$scheduledTime = "{0:00}:{1:00}:00" -f $schedulerHour, $schedulerMinute
-$timeDisplay = if ($schedulerHour -lt 12) { 
-    "{0:00}:{1:00} AM" -f $schedulerHour, $schedulerMinute 
-} 
-else { 
-    if ($schedulerHour -eq 12) {
-        "{0:00}:{1:00} PM" -f $schedulerHour, $schedulerMinute
-    } else {
-        "{0:00}:{1:00} PM" -f ($schedulerHour - 12), $schedulerMinute
-    }
-}
+$scheduledTime = Get-Date -Hour $schedulerHour -Minute $schedulerMinute -Second 0
+$timeDisplay = $scheduledTime.ToString("hh:mm tt")
 
 Write-Host "Creating new task scheduled for $timeDisplay daily..."
 
-$batchFilePath = "C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\L2_Report_Mail\run_l2_report.bat"
-
 try {
-    $taskAction = New-ScheduledTaskAction -Execute $batchFilePath -ErrorAction Stop
+    # Use cmd.exe to reliably execute batch files from Task Scheduler
+    $taskAction = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"`"$batchFilePath`"`"" -WorkingDirectory $scriptDir -ErrorAction Stop
+
+    # Daily trigger at configured time
     $taskTrigger = New-ScheduledTaskTrigger -Daily -At $scheduledTime -ErrorAction Stop
-    $taskSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -RunOnlyIfNetworkAvailable -ErrorAction Stop
-    
-    Register-ScheduledTask -TaskName "L2 Project Dashboard Report" `
+
+    # Run in user context so Outlook profile is available
+    $taskPrincipal = New-ScheduledTaskPrincipal -UserId $runAsUser -LogonType Interactive -RunLevel Highest -ErrorAction Stop
+
+    # -WakeToRun wakes system from sleep. Do NOT use StartWhenAvailable (no missed-run catch-up behavior).
+    $taskSettings = New-ScheduledTaskSettingsSet `
+        -WakeToRun `
+        -AllowStartIfOnBatteries `
+        -DontStopIfGoingOnBatteries `
+        -RunOnlyIfNetworkAvailable `
+        -MultipleInstances IgnoreNew `
+        -ExecutionTimeLimit (New-TimeSpan -Hours 2) `
+        -ErrorAction Stop
+
+    Register-ScheduledTask -TaskName $taskName `
         -Action $taskAction `
         -Trigger $taskTrigger `
+        -Principal $taskPrincipal `
         -Settings $taskSettings `
         -Description "Generates and sends L2 Project Dashboard report via Outlook email at $timeDisplay daily" `
-        -RunLevel Highest `
         -Force `
         -ErrorAction Stop
 
@@ -109,9 +142,13 @@ Write-Host "Task Details:"
 Write-Host "=========================================="
 
 try {
-    $taskInfo = Get-ScheduledTask -TaskName "L2 Project Dashboard Report" -ErrorAction Stop | Get-ScheduledTaskInfo -ErrorAction Stop
-    Write-Host "Task Name: L2 Project Dashboard Report"
-    Write-Host "Schedule: Daily at $timeDisplay ($scheduledTime)"
+    $taskInfo = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop | Get-ScheduledTaskInfo -ErrorAction Stop
+    Write-Host "Task Name: $taskName"
+    Write-Host "Run As User: $runAsUser"
+    Write-Host "Schedule: Daily at $timeDisplay"
+    Write-Host "Action: $batchFilePath"
+    Write-Host "Wake from sleep: Enabled"
+    Write-Host "Missed run catch-up after shutdown/off: Disabled"
     Write-Host "Status: $($taskInfo.State)"
     Write-Host "Next Run: $($taskInfo.NextRunTime)"
     Write-Host "Last Run: $($taskInfo.LastRunTime)"
@@ -126,7 +163,10 @@ Write-Host "=========================================="
 Write-Host "[OK] Setup complete!"
 Write-Host "=========================================="
 Write-Host ""
-Write-Host "Task will run automatically at $timeDisplay every day."
-Write-Host "Time configured from .env: SCHEDULER_HOUR=$schedulerHour, SCHEDULER_MINUTE=$schedulerMinute"
-Write-Host "Log files will be saved to: logs/email_delivery_*.log"
+Write-Host "Notes:"
+Write-Host "1) During SLEEP, the task can wake the machine and run if wake timers are allowed in Windows power settings."
+Write-Host "2) During SHUTDOWN/OFF state, no local Windows task can run at the exact schedule time."
+Write-Host "3) Outlook-based sending requires your user session (interactive profile)."
+Write-Host ""
+Write-Host "Log files will be saved to: $projectRoot\logs\email_delivery_*.log"
 Write-Host ""

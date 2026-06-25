@@ -1,15 +1,18 @@
-name: Send L2 Dashboard Report
+name: Send L2 Dashboard Report (DISABLED - Enable After Testing)
 
-# Triggers:
-# 1. Manual trigger from Actions tab (for testing)
-# 2. When code is pushed to main branch (after local PC generates report)
+# DISABLED: Workflow triggers only on manual "Run workflow" from Actions tab
+# Enable after local testing is complete
+# 
+# To enable automatic triggers when report changes, modify the 'on:' section below:
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - 'html_reports/L2_Report.html'
+
 on:
-  workflow_dispatch:  # Manual trigger
-  push:
-    branches:
-      - main
-    paths:
-      - 'html_reports/L2_Report.html'  # Only trigger if report file changes
+  workflow_dispatch:  # Manual trigger only
 
 jobs:
   send-report:

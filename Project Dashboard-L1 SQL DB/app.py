@@ -7,13 +7,41 @@ import traceback
 
 import pandas as pd
 from dotenv import load_dotenv
-from flask import Flask, render_template_string, send_file
+from flask import Flask, render_template_string, send_file, request
 
 load_dotenv()
 
 from db_utils import DB_PATH
 
 app = Flask(__name__)
+
+
+def apply_project_filters(rows, columns):
+    """Filter dashboard rows by query params for direct project deep-links."""
+    project_id_filter = request.args.get('project_id', '').strip()
+    project_name_filter = request.args.get('project_name', '').strip().lower()
+
+    if not columns or (not project_id_filter and not project_name_filter):
+        return rows
+
+    try:
+        pid_idx = columns.index('Project ID') if 'Project ID' in columns else None
+        pname_idx = columns.index('Project Name') if 'Project Name' in columns else None
+    except Exception:
+        return rows
+
+    filtered_rows = []
+    for row in rows:
+        cells = row.get('cells', [])
+        pid_val = str(cells[pid_idx]).strip() if pid_idx is not None and len(cells) > pid_idx else ''
+        pname_val = str(cells[pname_idx]).strip() if pname_idx is not None and len(cells) > pname_idx else ''
+
+        pid_match = not project_id_filter or pid_val == project_id_filter
+        pname_match = not project_name_filter or project_name_filter in pname_val.lower()
+        if pid_match and pname_match:
+            filtered_rows.append(row)
+
+    return filtered_rows
 
 # --- PVT Project Dashboard route ---
 @app.route('/pvt')
@@ -91,6 +119,7 @@ def pvt_dashboard():
             key=lambda row: parse_date(row['cells'][plan_start_idx]) if len(row['cells']) > plan_start_idx else datetime.min,
             reverse=True
         )
+    all_rows = apply_project_filters(all_rows, columns)
     return render_template_string(
         dashboard_html,
         dashboard_title='PVT Project Dashboard - L1 Report',
@@ -177,6 +206,7 @@ def ete_billing_dashboard():
             key=lambda row: parse_date(row['cells'][plan_start_idx]) if len(row['cells']) > plan_start_idx else datetime.min,
             reverse=True
         )
+    all_rows = apply_project_filters(all_rows, columns)
     return render_template_string(
         dashboard_html,
         dashboard_title='ETE Billing Project Dashboard - L1 Report',
@@ -1528,6 +1558,7 @@ def ete_dashboard():
             key=lambda row: parse_date(row['cells'][plan_start_idx]) if len(row['cells']) > plan_start_idx else datetime.min,
             reverse=True
         )
+    all_rows = apply_project_filters(all_rows, columns)
     return render_template_string(
         dashboard_html,
         dashboard_title='ETE Project Dashboard - L1 Report',

@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 # Get Email Configuration from .env or GitHub Secrets
 EMAIL_FROM = os.getenv('EMAIL_FROM', 'lalvishn@in.ibm.com')
 EMAIL_TO = os.getenv('EMAIL_TO', 'lalvishn@in.ibm.com,lv1087@att.com')
-EMAIL_SUBJECT = os.getenv('EMAIL_SUBJECT', 'L2 Project Dashboard Report - ETE Status Update')
+EMAIL_SUBJECT = os.getenv('EMAIL_SUBJECT') or os.getenv('EMAIL_SUBMIT') or 'L2 Project Dashboard Report - ETE Status Update'
 
 # SMTP Configuration
 SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.ibm.com')

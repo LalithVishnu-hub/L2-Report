@@ -11,6 +11,31 @@ from pathlib import Path
 from datetime import datetime
 import webbrowser
 import re
+import os
+from urllib.parse import quote_plus
+from html import escape
+
+from dotenv import load_dotenv
+
+
+SCRIPT_DIR = Path(__file__).parent
+PROJECT_ROOT = SCRIPT_DIR.parent
+load_dotenv(PROJECT_ROOT / '.env', override=True)
+L1_DASHBOARD_BASE_URL = os.getenv('L1_DASHBOARD_BASE_URL', 'http://localhost:5000').rstrip('/')
+GITHUB_PAGES_BASE_URL = os.getenv('GITHUB_PAGES_BASE_URL', '').rstrip('/')
+BOX_LOCAL_PATH = os.getenv('BOX_LOCAL_PATH', r'C:\Users\LalithVishnu\Box\L1 Report Repository')
+EMAIL_GREETING = os.getenv('EMAIL_GREETING', 'Hi All,')
+EMAIL_INTRO_MESSAGE = os.getenv('EMAIL_INTRO_MESSAGE', 'Please find below the L2 Project Dashboard for ETE Wireline Projects.')
+EMAIL_FOOTER = os.getenv(
+    'EMAIL_FOOTER',
+    'This report is automatically generated and sent daily. For any questions or clarifications regarding the projects listed above, please reach out to the respective Test Lead or Test Manager.'
+)
+EMAIL_SIGNATURE = os.getenv('EMAIL_SIGNATURE', 'Thanks & Regards,\nLalith Vishnu. S')
+
+
+def format_email_text(text):
+    """Escape and preserve line breaks for configurable email text."""
+    return '<br/>'.join(escape(str(text or '')).splitlines())
 
 def extract_date_from_filename(filename):
     """Extract date from filename and convert to datetime object.
@@ -120,7 +145,160 @@ def parse_project_info_from_filename(filename):
     # Extract date from filename
     file_date = extract_date_from_filename(filename)
     
-    return project_id, project_name, file_date
+    dashboard_route = '/ete'
+    file_upper = filename.upper()
+    if 'PVT' in file_upper:
+        dashboard_route = '/pvt'
+    elif 'BILLING' in file_upper:
+        dashboard_route = '/ete-billing'
+
+    return project_id, project_name, file_date, dashboard_route
+
+
+def extract_tc_summary_compact(file_path):
+    """Build compact TC summary from the 'TC Summary' sheet."""
+    status_map = {}
+    statuses = [
+        'Completed',
+        'Execution Complete/Uploaded for review',
+        'Blocked',
+        'Failed',
+        'On Hold',
+        'In Progress',
+        'Not Started',
+        'Deferred',
+        'Descoped',
+        'Total TCs'
+    ]
+
+    try:
+        tc_df = pd.read_excel(file_path, sheet_name='TC Summary', header=None)
+        for _, row in tc_df.iterrows():
+            label = str(row.iloc[0]).strip() if len(row) > 0 and pd.notna(row.iloc[0]) else ''
+            value = str(row.iloc[1]).strip() if len(row) > 1 and pd.notna(row.iloc[1]) else ''
+            if label in statuses and value:
+                status_map[label] = value
+    except Exception:
+        return 'N/A'
+
+    total = status_map.get('Total TCs', '0')
+    completed = status_map.get('Completed', '0')
+    in_progress = status_map.get('In Progress', '0')
+    blocked = status_map.get('Blocked', '0')
+    failed = status_map.get('Failed', '0')
+
+    return f"T:{total} | C:{completed} | IP:{in_progress} | B:{blocked} | F:{failed}"
+
+
+def build_l1_detail_link(project_id, project_name, dashboard_route):
+    """Build URL to GitHub Pages static L1 page (preferred) or local Flask fallback."""
+    safe_id = str(project_id or '').strip()
+    if GITHUB_PAGES_BASE_URL and safe_id:
+        return f"{GITHUB_PAGES_BASE_URL}/html_reports/L1/PID_{safe_id}.html"
+    # Fallback: local Flask dashboard
+    if not L1_DASHBOARD_BASE_URL:
+        return '#'
+    route = dashboard_route or '/ete'
+    encoded_name = quote_plus(str(project_name or ''))
+    return f"{L1_DASHBOARD_BASE_URL}{route}?project_id={project_id}&project_name={encoded_name}"
+
+
+def extract_tc_summary_full(file_path):
+    """Read full TC Summary sheet into list of (label, value) pairs."""
+    statuses = [
+        'Total TCs', 'Completed', 'Execution Complete/Uploaded for review',
+        'In Progress', 'Blocked', 'Failed', 'On Hold', 'Not Started',
+        'Deferred', 'Descoped',
+    ]
+    rows = []
+    try:
+        tc_df = pd.read_excel(file_path, sheet_name='TC Summary', header=None)
+        for _, row in tc_df.iterrows():
+            label = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else ''
+            value = str(row.iloc[1]).strip() if len(row) > 1 and pd.notna(row.iloc[1]) else ''
+            if label in statuses:
+                rows.append((label, value if value else '0'))
+    except Exception:
+        pass
+    return rows
+
+
+def generate_l1_static_page(project, file_path):
+    """Generate a self-contained static HTML page for one L1 project."""
+    tc_rows = extract_tc_summary_full(file_path)
+    status = str(project.get('overall_status', 'N/A')).strip()
+    status_lower = status.lower()
+    if 'blocked' in status_lower:
+        status_color = '#e74c3c'
+    elif 'in progress' in status_lower or 'on schedule' in status_lower or 'ahead' in status_lower:
+        status_color = '#27ae60'
+    elif 'completed' in status_lower:
+        status_color = '#3498db'
+    elif 'behind' in status_lower:
+        status_color = '#f39c12'
+    else:
+        status_color = '#7f8c8d'
+
+    tc_rows_html = ''
+    for label, value in tc_rows:
+        tc_rows_html += f'<tr><td style="padding:8px 16px;border:1px solid #ddd;font-family:\'Times New Roman\',serif;">{escape(label)}</td><td style="padding:8px 16px;border:1px solid #ddd;text-align:center;font-weight:bold;font-family:\'Times New Roman\',serif;">{escape(value)}</td></tr>\n'
+
+    if not tc_rows_html:
+        tc_rows_html = '<tr><td colspan="2" style="padding:8px;text-align:center;color:#888;">No TC Summary data available</td></tr>'
+
+    generated_at = datetime.now().strftime('%d %b %Y %I:%M %p')
+
+    return f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>L1 Report – {escape(str(project["project_name"]))}</title>
+<style>
+  body{{font-family:\'Times New Roman\',Times,serif;background:#f4f6f9;margin:0;padding:20px;}}
+  .card{{background:#fff;max-width:860px;margin:0 auto;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.1);overflow:hidden;}}
+  .header{{background:#4472C4;color:#fff;padding:24px 32px;}}
+  .header h1{{margin:0;font-size:22px;}}
+  .header p{{margin:4px 0 0;font-size:13px;opacity:.85;}}
+  .body{{padding:28px 32px;}}
+  .grid{{display:grid;grid-template-columns:1fr 1fr;gap:12px 32px;margin-bottom:24px;}}
+  .field label{{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;}}
+  .field span{{font-size:14px;color:#222;}}
+  .status-badge{{display:inline-block;padding:6px 18px;border-radius:20px;color:#fff;font-weight:bold;font-size:14px;background:{status_color};}}
+  table{{width:100%;border-collapse:collapse;margin-top:8px;}}
+  th{{background:#4472C4;color:#fff;padding:10px 16px;text-align:left;font-size:13px;}}
+  th:last-child{{text-align:center;}}
+  .footer{{font-size:11px;color:#aaa;text-align:right;margin-top:20px;}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h1>{escape(str(project["project_name"]))}</h1>
+    <p>Project ID: {escape(str(project["project_id"]))} &nbsp;|&nbsp; UFD #: {escape(str(project["ufd_number"]))}</p>
+  </div>
+  <div class="body">
+    <div class="grid">
+      <div class="field"><label>Test Lead</label><span>{escape(str(project["test_lead"]))}</span></div>
+      <div class="field"><label>Test Manager</label><span>{escape(str(project["test_manager"]))}</span></div>
+      <div class="field"><label>Plan Start</label><span>{escape(str(project["plan_start"]))}</span></div>
+      <div class="field"><label>Plan End</label><span>{escape(str(project["plan_end"]))}</span></div>
+      <div class="field"><label>Planned %</label><span>{escape(str(project["planned_pct"]))}</span></div>
+      <div class="field"><label>Passed %</label><span>{escape(str(project["passed_pct"]))}</span></div>
+      <div class="field"><label>Last Updated</label><span>{escape(str(project["last_updated"]))}</span></div>
+      <div class="field"><label>Overall Status</label><span class="status-badge">{escape(status)}</span></div>
+    </div>
+    <h3 style="margin:20px 0 10px;color:#4472C4;">TC Summary</h3>
+    <table>
+      <thead><tr><th>Status</th><th style="text-align:center;">Count</th></tr></thead>
+      <tbody>{tc_rows_html}</tbody>
+    </table>
+    <div class="footer">Generated: {generated_at}</div>
+  </div>
+</div>
+</body>
+</html>
+'''
 
 
 def read_l2_project_data(file_path):
@@ -229,6 +407,7 @@ def read_l2_project_data(file_path):
             'planned_pct': planned_pct,
             'passed_pct': passed_pct,
             'overall_status': overall_status,
+            'tc_summary_compact': extract_tc_summary_compact(file_path),
             'last_updated': last_updated,
             'file_mtime': file_mtime
         }
@@ -370,8 +549,8 @@ def generate_l2_report_html(projects_data):
 <body>
     <div class="email-container">
         <div class="greeting">
-            <p>Hi All,</p>
-            <p>Please find below the L2 Project Dashboard for ETE Wireline Projects.</p>
+            <p>__EMAIL_GREETING__</p>
+            <p>__EMAIL_INTRO_MESSAGE__</p>
         </div>
 
         <div class="table-section">
@@ -381,12 +560,14 @@ def generate_l2_report_html(projects_data):
                         <th>Project ID</th>
                         <th>UFD #</th>
                         <th>Project Name</th>
+                        <th>TC Summary</th>
                         <th>Plan Start</th>
                         <th>Plan End</th>
                         <th>Planned %</th>
                         <th>Passed %</th>
                         <th>Last Updated</th>
                         <th>Overall Status</th>
+                        <th>L1 Report</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -398,27 +579,32 @@ def generate_l2_report_html(projects_data):
         html += f'                    <td>{project["project_id"]}</td>\n'
         html += f'                    <td>{project["ufd_number"]}</td>\n'
         html += f'                    <td>{project["project_name"]}</td>\n'
+        html += f'                    <td>{project["tc_summary_compact"]}</td>\n'
         html += f'                    <td>{project["plan_start"]}</td>\n'
         html += f'                    <td>{project["plan_end"]}</td>\n'
         html += f'                    <td>{project["planned_pct"]}</td>\n'
         html += f'                    <td>{project["passed_pct"]}</td>\n'
         html += f'                    <td>{project["last_updated"]}</td>\n'
         html += f'                    <td>{project["status_html"]}</td>\n'
+        html += f'                    <td><a href="{project["details_link"]}" target="_blank" rel="noopener noreferrer">Click here for more details</a></td>\n'
         html += '                </tr>\n'
     
     html += '''            </tbody>
-                </tbody>
             </table>
         </div>
 
         <div class="footer">
-            <p>This report is automatically generated and sent daily. For any questions or clarifications regarding the projects listed above, please reach out to the respective Test Lead or Test Manager.</p>
-            <p>Thanks & Regards,<br/>Lalith Vishnu. S</p>
+            <p>__EMAIL_FOOTER__</p>
+            <p>__EMAIL_SIGNATURE__</p>
         </div>
     </div>
 </body>
 </html>
 '''
+    html = html.replace('__EMAIL_GREETING__', format_email_text(EMAIL_GREETING))
+    html = html.replace('__EMAIL_INTRO_MESSAGE__', format_email_text(EMAIL_INTRO_MESSAGE))
+    html = html.replace('__EMAIL_FOOTER__', format_email_text(EMAIL_FOOTER))
+    html = html.replace('__EMAIL_SIGNATURE__', format_email_text(EMAIL_SIGNATURE))
     return html
 
 
@@ -429,7 +615,7 @@ def main():
     print("=" * 70)
     print()
     
-    excel_dir = Path("C:/Users/LalithVishnu/Box/L1 Report Repository")
+    excel_dir = Path(BOX_LOCAL_PATH)
     
     if not excel_dir.exists():
         print(f"✗ Directory not found: {excel_dir}")
@@ -457,7 +643,7 @@ def main():
         print(f"Reading: {file_path.name}...")
         
         # Get project info from filename
-        project_id, project_name, file_date = parse_project_info_from_filename(file_path.name)
+        project_id, project_name, file_date, dashboard_route = parse_project_info_from_filename(file_path.name)
         
         if not project_id:
             print(f"  ⚠ Could not parse project ID from filename")
@@ -479,15 +665,20 @@ def main():
             'plan_end': data['plan_end'],
             'planned_pct': data['planned_pct'],
             'passed_pct': data['passed_pct'],
+            'tc_summary_compact': data['tc_summary_compact'],
             'ufd_number': data['ufd_number'],
             'overall_status': data['overall_status'],
             'last_updated': data['last_updated'],
             'file_mtime': data['file_mtime'],
             'file_date': file_date,
+            'dashboard_route': dashboard_route,
+            'details_link': build_l1_detail_link(project_id, project_name, dashboard_route),
             'status_html': get_status_badge_html(data['overall_status'])
         }
         
         projects_data.append(project_record)
+        # Store original file_path on record so static pages can be generated later
+        project_record['_file_path'] = file_path
         print(f"  ✓ Project: {project_name}")
         print(f"      Test Lead: {data['test_lead']} | Test Manager: {data['test_manager']}")
         print(f"      UFD: {data['ufd_number']} | Updated: {data['last_updated']}")
@@ -524,7 +715,24 @@ def main():
     print(f"  File size: {output_file.stat().st_size:,} bytes")
     print(f"  Projects: {len(projects_data)}")
     print()
-    
+
+    # Generate per-project static L1 pages for GitHub Pages
+    if GITHUB_PAGES_BASE_URL:
+        l1_dir = output_dir / 'L1'
+        l1_dir.mkdir(exist_ok=True)
+        print("Generating static L1 project pages for GitHub Pages...")
+        for project in projects_data:
+            fp = project.get('_file_path')
+            if not fp:
+                continue
+            safe_id = str(project['project_id']).strip()
+            page_html = generate_l1_static_page(project, fp)
+            page_file = l1_dir / f'PID_{safe_id}.html'
+            page_file.write_text(page_html, encoding='utf-8')
+            print(f"  ✓ {page_file.name}")
+        print(f"✓ L1 static pages saved to: {l1_dir}")
+        print()
+
     # Open in browser
     print("Opening in browser...")
     webbrowser.open(f'file:///{output_file}')
