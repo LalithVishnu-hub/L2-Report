@@ -198,7 +198,7 @@ def extract_tc_summary_compact(file_path):
     if not counts:
         return 'N/A'
     total = sum(counts.values())
-    completed = counts.get('Completed', 0) + counts.get('Execution Completed', 0)
+    completed = counts.get('Completed', 0)
     in_progress = counts.get('In Progress', 0)
     blocked = counts.get('Blocked', 0)
     execution_completed = counts.get('Execution Completed', 0)
