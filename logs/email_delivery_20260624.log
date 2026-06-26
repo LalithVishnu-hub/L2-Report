@@ -242,3 +242,27 @@
 2026-06-24 19:07:09,423 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
 2026-06-24 19:07:09,425 - INFO - [OK] Timestamp: 2026-06-24 19:07:09
 2026-06-24 19:07:09,425 - INFO - ================================================================================
+2026-06-24 20:07:41,200 - INFO - ================================================================================
+2026-06-24 20:07:41,200 - INFO - MANUAL EMAIL TRIGGER at 2026-06-24 20:07:41
+2026-06-24 20:07:41,200 - INFO - ================================================================================
+2026-06-24 20:07:41,200 - INFO - Generating L2 Report...
+2026-06-24 20:07:47,036 - INFO - [OK] L2_Report.html generated successfully
+2026-06-24 20:07:47,036 - INFO - ================================================================================
+2026-06-24 20:07:47,036 - INFO - Using: Outlook Application with Account Delegation
+2026-06-24 20:07:47,036 - INFO - ================================================================================
+2026-06-24 20:07:47,292 - INFO - Connecting to Outlook...
+2026-06-24 20:07:47,298 - INFO - Attempt 1: Starting Outlook application...
+2026-06-24 20:07:48,941 - INFO - [OK] Outlook application started
+2026-06-24 20:07:52,950 - INFO - Getting Outlook account for lalvishn@in.ibm.com...
+2026-06-24 20:07:52,951 - INFO - [OK] Email body loaded (9973 bytes) from C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\html_reports\L2_Report.html
+2026-06-24 20:07:53,180 - INFO -   Added recipient: lv1087@att.com
+2026-06-24 20:07:54,647 - INFO -   [OK] All recipients resolved
+2026-06-24 20:07:55,771 - INFO -   Using account: lalvishn@in.ibm.com (lalvishn@in.ibm.com)
+2026-06-24 20:07:55,771 - INFO -   To: lv1087@att.com
+2026-06-24 20:07:55,771 - INFO -   Subject: L2 Project Dashboard Report - ETE Status Update
+2026-06-24 20:07:55,771 - INFO -   Body: HTML (9973 bytes)
+2026-06-24 20:07:55,771 - INFO - Sending email via Outlook...
+2026-06-24 20:07:55,851 - INFO - ================================================================================
+2026-06-24 20:07:55,852 - INFO - [OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!
+2026-06-24 20:07:55,852 - INFO - [OK] Timestamp: 2026-06-24 20:07:55
+2026-06-24 20:07:55,852 - INFO - ================================================================================

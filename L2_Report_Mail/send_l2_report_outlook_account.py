@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 # Get Email Configuration from .env
 EMAIL_FROM = os.getenv('EMAIL_FROM', 'lalvishn@in.ibm.com')
 EMAIL_TO = os.getenv('EMAIL_TO', 'lalvishn@in.ibm.com,lv1087@att.com')
+EMAIL_CC = os.getenv('EMAIL_CC', '')
 EMAIL_SUBJECT = os.getenv('EMAIL_SUBJECT') or os.getenv('EMAIL_SUBMIT') or 'L2 Project Dashboard Report - ETE Status Update'
 
 
@@ -144,6 +145,17 @@ def send_via_outlook_account():
                 except Exception as e:
                     logger.warning(f"  Failed to add {email_addr}: {e}")
         
+        # Add CC recipients
+        for email_addr in EMAIL_CC.split(','):
+            email_addr = email_addr.strip()
+            if email_addr:
+                try:
+                    recipient = recipients.Add(email_addr)
+                    recipient.Type = 2  # 2 = olCC
+                    logger.info(f"  Added CC: {email_addr}")
+                except Exception as e:
+                    logger.warning(f"  Failed to add CC {email_addr}: {e}")
+
         # Resolve all recipients
         try:
             recipients.ResolveAll()
@@ -172,6 +184,8 @@ def send_via_outlook_account():
             logger.info("  Using default account")
         
         logger.info(f"  To: {EMAIL_TO}")
+        if EMAIL_CC:
+            logger.info(f"  CC: {EMAIL_CC}")
         logger.info(f"  Subject: {EMAIL_SUBJECT}")
         logger.info(f"  Body: HTML ({len(email_body)} bytes)")
         

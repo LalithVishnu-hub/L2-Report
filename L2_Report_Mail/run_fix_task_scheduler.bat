@@ -1,29 +1,32 @@
 @echo off
 REM Run PowerShell script with admin privileges to update Task Scheduler
+setlocal enabledelayedexpansion
+set "SCRIPT_DIR=%~dp0"
+set "PS_SCRIPT=%SCRIPT_DIR%fix_task_scheduler.ps1"
 
+echo.
 echo Requesting Administrator privileges...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process powershell -Verb runas -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-File',\"$PSScriptRoot\fix_task_scheduler.ps1\" -Wait"
+echo.
 
-if %ERRORLEVEL% EQU 0 (
+REM Run PowerShell script with elevated privileges
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%"
+set PS_EXIT=%ERRORLEVEL%
+
+if %PS_EXIT% EQU 0 (
     echo.
     echo ============================================
-    echo Task scheduler setup completed successfully!
+    echo [SUCCESS] Task Scheduler setup complete!
     echo ============================================
-    echo.
-    echo Your task is scheduled to run daily (Mon-Fri)
-    echo Time is set from SCHEDULER_HOUR and SCHEDULER_MINUTE in .env file
-    echo Edit .env and run this script again to change the schedule time.
-    echo.
 ) else (
     echo.
     echo ============================================
-    echo ERROR: Setup failed!
+    echo [ERROR] Setup failed - exit code %PS_EXIT%
     echo ============================================
-    echo Please run this file as Administrator:
+    echo Please run this batch file as Administrator:
     echo 1. Right-click this file
     echo 2. Select "Run as administrator"
     echo.
 )
 
 pause
-
+exit /b %PS_EXIT%

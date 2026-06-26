@@ -198,18 +198,19 @@ def extract_tc_summary_compact(file_path):
     if not counts:
         return 'N/A'
     total = sum(counts.values())
-    completed = counts.get('Completed', 0) + counts.get('Execution Complete/Uploaded for review', 0)
+    completed = counts.get('Completed', 0) + counts.get('Execution Completed', 0)
     in_progress = counts.get('In Progress', 0)
     blocked = counts.get('Blocked', 0)
-    failed = counts.get('Failed', 0)
-    return f"T:{total} | C:{completed} | IP:{in_progress} | B:{blocked} | F:{failed}"
+    execution_completed = counts.get('Execution Completed', 0)
+    return f"T:{total} | C:{completed} | IP:{in_progress} | B:{blocked} | EC:{execution_completed}"
 
 
 def build_l1_detail_link(project_id, project_name, dashboard_route):
     """Build URL to GitHub Pages static L1 page (preferred) or local Flask fallback."""
     safe_id = str(project_id or '').strip()
     if GITHUB_PAGES_BASE_URL and safe_id:
-        return f"{GITHUB_PAGES_BASE_URL}/html_reports/L1/PID_{safe_id}.html"
+        safe_name = re.sub(r'[^\w]', '_', str(project_name or '').strip())
+        return f"{GITHUB_PAGES_BASE_URL}/html_reports/L1/PID_{safe_id}_{safe_name}.html"
     # Fallback: local Flask dashboard
     if not L1_DASHBOARD_BASE_URL:
         return '#'
@@ -225,7 +226,7 @@ def extract_tc_summary_full(file_path):
         return []
     total = sum(counts.values())
     order = [
-        'Completed', 'Execution Complete/Uploaded for review', 'In Progress',
+        'Completed', 'Execution Completed', 'In Progress',
         'Blocked', 'Failed', 'On Hold', 'Not Started', 'Deferred', 'Descoped',
     ]
     rows = []
@@ -261,23 +262,62 @@ def read_detailed_tc_rows(file_path):
                     selected.append(col)
         if not selected:
             selected = list(df.columns)
+        # Drop columns that are entirely empty (e.g. 'Test Set' in some Excel files)
+        non_empty = [c for c in selected if df[c].dropna().astype(str).str.strip().ne('').any()]
+        if non_empty:
+            selected = non_empty
         # Only rows that have a Status value
         df_clean = df[selected].dropna(how='all')
-        # Format date columns
+        # Identify section-header rows before status filter (single non-empty text cell, no Status)
+        status_col = next((c for c in selected if c.strip().lower() == 'status'), None)
+        section_headers_by_idx = {}
+        if status_col:
+            for idx, row in df_clean.iterrows():
+                sv = row.get(status_col, None)
+                if pd.isna(sv) or str(sv).strip() in ('', 'nan'):
+                    non_empty_cells = [(c, row[c]) for c in selected
+                                       if pd.notna(row[c]) and str(row[c]).strip() not in ('', 'nan')]
+                    if len(non_empty_cells) == 1:
+                        val = str(non_empty_cells[0][1]).strip()
+                        try: float(val)
+                        except ValueError:
+                            try: pd.Timestamp(val)
+                            except: section_headers_by_idx[idx] = val
+        # Filter to data rows only (has Status)
+        if status_col:
+            df_filtered = df_clean[df_clean[status_col].apply(
+                lambda v: pd.notna(v) and str(v).strip() not in ('', 'nan'))]
+        else:
+            df_filtered = df_clean
+        # Format date columns — safe against non-date strings
+        def _safe_date(v):
+            if pd.isna(v) or str(v).strip() in ('', 'nan'):
+                return ''
+            try:
+                return pd.Timestamp(v).strftime('%m/%d/%Y')
+            except Exception:
+                return str(v)
         for col in selected:
             if 'date' in col.lower() or 'start' in col.lower() or 'end' in col.lower():
-                df_clean = df_clean.copy()
-                df_clean[col] = df_clean[col].apply(
-                    lambda v: pd.Timestamp(v).strftime('%m/%d/%Y') if pd.notna(v) and str(v) != 'nan' else '')
+                df_filtered = df_filtered.copy()
+                df_filtered[col] = df_filtered[col].apply(_safe_date)
         # Clean headers for display
         display_headers = [c.strip().replace('  ', ' ') for c in selected]
+        # Build rows in original order, interleaving section headers
+        all_indices = sorted(set(list(df_filtered.index)) | set(section_headers_by_idx.keys()))
         rows = []
-        for _, row in df_clean.iterrows():
-            cells = [str(v) if pd.notna(v) and str(v) != 'nan' else '' for v in row]
-            if any(cells):
-                rows.append(cells)
+        for idx in all_indices:
+            if idx in section_headers_by_idx:
+                # Section header: marker + text + empty placeholders
+                rows.append(['__SECTION__', section_headers_by_idx[idx]] + [''] * max(0, len(selected) - 2))
+            elif idx in df_filtered.index:
+                row = df_filtered.loc[idx]
+                cells = [str(v) if pd.notna(v) and str(v) != 'nan' else '' for v in row]
+                if any(cells):
+                    rows.append(cells)
         return display_headers, rows
     except Exception:
+        import traceback; traceback.print_exc()
         return [], []
 
 
@@ -406,9 +446,34 @@ def generate_l1_static_page(project, file_path):
         tc_rows_html = '<tr><td colspan="2" style="padding:8px;text-align:center;color:#888;">No TC Summary data available</td></tr>'
 
     # Detailed TC table
-    detail_headers_html = ''.join(f'<th style="padding:8px 10px;white-space:nowrap;text-align:center;">{escape(h)}</th>' for h in detail_headers)
+    # Detailed TC table – assign widths by column name to prevent overlap
+    def _th_width(h):
+        hl = h.lower()
+        if 'description' in hl:    return 'width:16%;'
+        if 'id/name' in hl or ('test case id' in hl): return 'width:11%;'
+        if 'test set' in hl:       return 'width:7%;'
+        if 'product' in hl:        return 'width:6%;'
+        if 'start date' in hl:     return 'width:8%;'
+        if 'end date' in hl:       return 'width:8%;'
+        if 'total step' in hl:     return 'width:5%;'
+        if 'planned step' in hl:   return 'width:6%;'
+        if 'passed step' in hl:    return 'width:6%;'
+        if 'planned %' in hl or 'planned%' in hl: return 'width:5%;'
+        if 'passed %' in hl or 'passed%' in hl:  return 'width:5%;'
+        if 'status' in hl:         return 'width:10%;'
+        if 'comment' in hl:        return 'width:13%;'
+        return ''
+    detail_headers_html = ''.join(
+        f'<th style="padding:6px 8px;white-space:normal;text-align:center;{_th_width(h)}">{escape(h)}</th>'
+        for h in detail_headers
+    )
     detail_rows_html = ''
     for row in detail_rows:
+        # Section header row (e.g. "ASF initiated Newstarts")
+        if row and row[0] == '__SECTION__':
+            section_text = row[1] if len(row) > 1 else ''
+            detail_rows_html += f'<tr><td colspan="{len(detail_headers)}" style="background:#e8edf7;color:#4472C4;font-weight:bold;padding:7px 12px;border:1px solid #c8d4ee;text-align:center;font-size:12px;">{escape(section_text)}</td></tr>\n'
+            continue
         status_val = ''
         cells_html = ''
         for i, cell in enumerate(row):
@@ -416,13 +481,16 @@ def generate_l1_static_page(project, file_path):
             if col.lower() == 'status':
                 status_val = cell
                 sc = _status_color(cell)
-                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;"><span style="background:{sc};color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">{escape(cell)}</span></td>'
+                cells_html += f'<td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;text-align:center;"><span style="background:{sc};color:#fff;padding:3px 6px;border-radius:10px;font-size:10px;font-weight:bold;word-break:break-word;">{escape(cell)}</span></td>'
             elif 'comment' in col.lower():
                 short = (cell[:100] + '…') if len(cell) > 100 else cell
                 cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:280px;word-wrap:break-word;white-space:normal;text-align:center;" title="{escape(cell)}">{escape(short)}</td>'
+            elif 'id/name' in col.lower() or ('test case' in col.lower() and 'id' in col.lower()):
+                short = (cell[:80] + '…') if len(cell) > 80 else cell
+                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;word-wrap:break-word;white-space:normal;text-align:center;" title="{escape(cell)}">{escape(short)}</td>'
             elif 'description' in col.lower():
                 short = (cell[:100] + '…') if len(cell) > 100 else cell
-                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;max-width:220px;word-wrap:break-word;white-space:normal;text-align:center;" title="{escape(cell)}">{escape(short)}</td>'
+                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;word-wrap:break-word;white-space:normal;text-align:center;" title="{escape(cell)}">{escape(short)}</td>'
             elif '%' in col:
                 try:
                     fval = float(cell)
@@ -438,7 +506,7 @@ def generate_l1_static_page(project, file_path):
                 except Exception:
                     cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">{escape(cell)}</td>'
             else:
-                cells_html += f'<td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">{escape(cell)}</td>'
+                cells_html += f'<td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">{escape(cell)}</td>'
         detail_rows_html += f'<tr>{cells_html}</tr>\n'
 
     if not detail_rows_html:
@@ -489,24 +557,20 @@ def generate_l1_static_page(project, file_path):
     detail_table_html = ''
     if detail_headers:
         detail_table_html = f'''
-    <h3 style="margin:16px 0 10px;color:#4472C4;">Detailed TC Execution</h3>
-    <div style="overflow-x:auto;">
-    <table style="width:100%;border-collapse:collapse;font-size:12px;">
-      <thead><tr style="background:#4472C4;color:#fff;">{detail_headers_html}</tr></thead>
-      <tbody>{detail_rows_html}</tbody>
-    </table>
-    </div>'''
+<h3 style="margin:16px 0 10px;color:#4472C4;">Detailed TC Execution</h3>
+<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;table-layout:fixed;word-wrap:break-word;">
+<thead><tr style="background:#4472C4;color:#fff;">{detail_headers_html}</tr></thead>
+<tbody>{detail_rows_html}</tbody>
+</table>'''
 
     defect_table_html = ''
     if defect_log_rows:
         defect_table_html = f'''
-    <h3 style="margin:16px 0 10px;color:#d32f2f;">Defect Log</h3>
-    <div style="overflow-x:auto;">
-    <table style="width:100%;border-collapse:collapse;font-size:12px;">
-      <thead><tr style="background:#d32f2f;color:#fff;">{defect_headers_html}</tr></thead>
-      <tbody>{defect_rows_html}</tbody>
-    </table>
-    </div>'''
+<h3 style="margin:16px 0 10px;color:#d32f2f;">Defect Log</h3>
+<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;table-layout:fixed;">
+<thead><tr style="background:#d32f2f;color:#fff;">{defect_headers_html}</tr></thead>
+<tbody>{defect_rows_html}</tbody>
+</table>'''
 
     return f'''<!DOCTYPE html>
 <html lang="en">
@@ -517,19 +581,19 @@ def generate_l1_static_page(project, file_path):
 <style>
   *{{box-sizing:border-box;}}
   body{{font-family:'Times New Roman',Times,serif;background:#f4f6f9;margin:0;padding:20px;}}
-  .card{{background:#fff;max-width:1200px;margin:0 auto;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.1);overflow:hidden;}}
-  .header{{background:#4472C4;color:#fff;padding:24px 32px;}}
-  .header h1{{margin:0;font-size:22px;}}
-  .header p{{margin:4px 0 0;font-size:13px;opacity:.85;}}
-  .body{{padding:28px 32px;}}
-  .grid{{display:grid;grid-template-columns:1fr 1fr;gap:12px 32px;margin-bottom:24px;}}
+  .card{{background:#fff;width:100%;margin:0;border-radius:0;box-shadow:none;overflow:hidden;}}
+  .header{{background:#4472C4;color:#fff;padding:20px 24px;}}
+  .header h1{{margin:0;font-size:20px;}}
+  .header p{{margin:4px 0 0;font-size:12px;opacity:.85;}}
+  .body{{padding:16px 24px;}}
+  .grid{{display:grid;grid-template-columns:1fr 1fr;gap:8px 32px;margin-bottom:16px;}}
   .field label{{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;}}
   .field span{{font-size:14px;color:#222;}}
   .status-badge{{display:inline-block;padding:6px 18px;border-radius:20px;color:#fff;font-weight:bold;font-size:14px;background:{status_color};}}
-  .summary-table{{width:340px;border-collapse:collapse;margin-top:8px;}}
+  .summary-table{{width:340px;border-collapse:collapse;margin-top:8px;margin-bottom:20px;}}
   .summary-table th{{background:#4472C4;color:#fff;padding:9px 14px;text-align:left;font-size:13px;}}
   .summary-table td{{border:1px solid #ddd;font-family:'Times New Roman',serif;font-size:13px;}}
-  .footer{{font-size:11px;color:#aaa;text-align:right;margin-top:12px;border-top:1px solid #eee;padding-top:6px;}}
+  .footer{{font-size:11px;color:#aaa;text-align:right;margin-top:20px;border-top:1px solid #eee;padding-top:6px;}}
   tbody tr:nth-child(even){{background:#f9f9f9;}}
   tbody tr:hover{{background:#eef3ff;}}
   table{{border-collapse:collapse;}}
@@ -707,7 +771,7 @@ def get_status_badge_html(status_text):
     else:
         bg_color = '#7f8c8d'  # Gray
     
-    return f'<span style="background: {bg_color}; color: white; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; display: inline-block; font-family: Times New Roman, Times, serif; white-space: nowrap;">{status_text}</span>'
+    return f'<span style="background: {bg_color}; color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 9pt; display: inline-block; font-family: Times New Roman, Times, serif;">{status_text}</span>'
 
 
 def deduplicate_by_project_name(projects_list):
@@ -756,8 +820,7 @@ def generate_l2_report_html(projects_data):
             font-size: 11pt;
         }
         .email-container {
-            max-width: 1200px;
-            margin: 0 auto;
+            width: 100%;
             background: #ffffff;
             padding: 20px;
             font-family: 'Times New Roman', Times, serif;
@@ -780,22 +843,25 @@ def generate_l2_report_html(projects_data):
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            font-size: 11pt;
+            font-size: 9pt;
             font-family: 'Times New Roman', Times, serif;
+            table-layout: fixed;
+            word-wrap: break-word;
         }
         th {
             background: #4472C4;
             color: #ffffff;
             font-weight: bold;
-            padding: 10px;
+            padding: 6px 5px;
             text-align: center;
             border: 1px solid #cccccc;
         }
         td {
-            padding: 10px;
+            padding: 6px 5px;
             text-align: center;
             border: 1px solid #cccccc;
             color: #333333;
+            word-wrap: break-word;
         }
         tbody tr:nth-child(even) {
             background: #f0f0f0;
@@ -826,17 +892,17 @@ def generate_l2_report_html(projects_data):
             <table>
                 <thead>
                     <tr>
-                        <th>Project ID</th>
-                        <th>UFD #</th>
-                        <th>Project Name</th>
-                        <th style="width:130px;">TC Summary</th>
-                        <th>Plan Start</th>
-                        <th>Plan End</th>
-                        <th>Planned %</th>
-                        <th>Passed %</th>
-                        <th>Last Updated</th>
-                        <th>Overall Status</th>
-                        <th>L1 Report</th>
+                        <th style="width:6%;">Project ID</th>
+                        <th style="width:5%;">UFD #</th>
+                        <th style="width:14%;">Project Name</th>
+                        <th style="width:10%;">TC Summary</th>
+                        <th style="width:8%;">Plan Start</th>
+                        <th style="width:8%;">Plan End</th>
+                        <th style="width:7%;">Planned %</th>
+                        <th style="width:7%;">Passed %</th>
+                        <th style="width:11%;">Last Updated</th>
+                        <th style="width:12%;">Overall Status</th>
+                        <th style="width:12%;">L1 Report</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -848,7 +914,7 @@ def generate_l2_report_html(projects_data):
         html += f'                    <td>{project["project_id"]}</td>\n'
         html += f'                    <td>{project["ufd_number"]}</td>\n'
         html += f'                    <td>{project["project_name"]}</td>\n'
-        html += f'                    <td style="font-size:10px;white-space:nowrap;width:130px;max-width:130px;">{project["tc_summary_compact"]}</td>\n'
+        html += f'                    <td style="font-size:8.5pt;">{project["tc_summary_compact"]}</td>\n'
         html += f'                    <td>{project["plan_start"]}</td>\n'
         html += f'                    <td>{project["plan_end"]}</td>\n'
         html += f'                    <td>{project["planned_pct"]}</td>\n'
@@ -890,9 +956,10 @@ def main():
         print(f"✗ Directory not found: {excel_dir}")
         return
     
-    # Get all Excel files (including .xlsm)
+    # Get all Excel files (including .xlsm), skip temp lock files (~$...)
     excel_files = sorted(
-        list(excel_dir.glob("*.xlsx")) + list(excel_dir.glob("*.xls")) + list(excel_dir.glob("*.xlsm")),
+        [p for p in list(excel_dir.glob("*.xlsx")) + list(excel_dir.glob("*.xls")) + list(excel_dir.glob("*.xlsm"))
+         if not p.name.startswith('~$')],
         key=lambda p: p.stat().st_mtime,
         reverse=True
     )
@@ -995,8 +1062,9 @@ def main():
             if not fp:
                 continue
             safe_id = str(project['project_id']).strip()
+            safe_name = re.sub(r'[^\w]', '_', str(project['project_name']).strip())
             page_html = generate_l1_static_page(project, fp)
-            page_file = l1_dir / f'PID_{safe_id}.html'
+            page_file = l1_dir / f'PID_{safe_id}_{safe_name}.html'
             page_file.write_text(page_html, encoding='utf-8')
             print(f"  ✓ {page_file.name}")
         print(f"✓ L1 static pages saved to: {l1_dir}")

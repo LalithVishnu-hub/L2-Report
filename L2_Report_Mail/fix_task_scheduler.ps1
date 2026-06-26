@@ -12,21 +12,9 @@ $principal = New-Object System.Security.Principal.WindowsPrincipal($currentUser)
 $adminRole = [System.Security.Principal.WindowsBuiltInRole]::Administrator
 
 if (-not $principal.IsInRole($adminRole)) {
-    Write-Host "Administrator privileges are required. Requesting elevation..."
-    try {
-        $scriptPath = $MyInvocation.MyCommand.Path
-        Start-Process -FilePath "powershell.exe" `
-            -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `""$scriptPath`""" `
-            -Verb RunAs `
-            -ErrorAction Stop | Out-Null
-        Write-Host "UAC prompt opened. Approve it to continue scheduler setup."
-        exit 0
-    }
-    catch {
-        Write-Host "ERROR: Could not elevate automatically: $_"
-        Write-Host "Please run PowerShell as Administrator and re-run this script."
-        exit 1
-    }
+    Write-Host "ERROR: Administrator privileges are required."
+    Write-Host "Please run this script as Administrator."
+    exit 1
 }
 
 Write-Host "Admin privileges verified"
@@ -170,3 +158,5 @@ Write-Host "3) Outlook-based sending requires your user session (interactive pro
 Write-Host ""
 Write-Host "Log files will be saved to: $projectRoot\logs\email_delivery_*.log"
 Write-Host ""
+
+exit 0
