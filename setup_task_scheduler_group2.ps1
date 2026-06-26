@@ -33,15 +33,10 @@ $action = New-ScheduledTaskAction `
 Write-Host "✓ Task action created (Group 2 parameter added)" -ForegroundColor Green
 
 # Set task to run at 8:30 AM on weekdays (Monday-Friday)
-# Create trigger for each weekday
-$triggers = @()
-foreach ($dayOfWeek in @('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')) {
-    $trigger = New-ScheduledTaskTrigger `
-        -Weekly `
-        -DaysOfWeek $dayOfWeek `
-        -At "8:30 AM"
-    $triggers += $trigger
-}
+$trigger = New-ScheduledTaskTrigger `
+    -Weekly `
+    -DaysOfWeek @('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday') `
+    -At "8:30 AM"
 
 Write-Host "✓ Weekly trigger set for weekdays at 8:30 AM (Mon-Fri)" -ForegroundColor Green
 
@@ -69,26 +64,17 @@ try {
         Unregister-ScheduledTask -TaskName $taskName -TaskPath "\$taskFolder\" -Confirm:$false
     }
     
-    # Register new task with first trigger
+    # Register new task
     Register-ScheduledTask `
         -TaskName $taskName `
         -TaskPath "\$taskFolder\" `
         -Action $action `
-        -Trigger $triggers[0] `
+        -Trigger $trigger `
         -Settings $settings `
         -Principal $principal `
         -Force | Out-Null
     
     Write-Host "✓ Task registered successfully" -ForegroundColor Green
-    
-    # Add additional weekday triggers
-    $task = Get-ScheduledTask -TaskName $taskName -TaskPath "\$taskFolder\"
-    for ($i = 1; $i -lt $triggers.Count; $i++) {
-        $task.Triggers += $triggers[$i]
-    }
-    $task | Set-ScheduledTask | Out-Null
-    
-    Write-Host "✓ All weekday triggers added" -ForegroundColor Green
     
     # Get task details
     Write-Host ""
