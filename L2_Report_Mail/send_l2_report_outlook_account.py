@@ -1,6 +1,7 @@
 """
 L2 Report Email Sender via Outlook MAPI with Account Selection
 Works with Outlook's existing account and delegates to Outlook for sending
+Supports multiple contact groups via --group parameter
 """
 
 import os
@@ -36,10 +37,24 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Parse command line arguments for contact group selection
+contact_group = 'group1'  # default
+if '--group' in sys.argv:
+    idx = sys.argv.index('--group')
+    if idx + 1 < len(sys.argv):
+        contact_group = sys.argv[idx + 1]
+        logger.info(f"Using contact group: {contact_group}")
+
 # Get Email Configuration from .env
 EMAIL_FROM = os.getenv('EMAIL_FROM', 'lalvishn@in.ibm.com')
-EMAIL_TO = os.getenv('EMAIL_TO', 'lalvishn@in.ibm.com,lv1087@att.com')
-EMAIL_CC = os.getenv('EMAIL_CC', '')
+
+if contact_group == 'group2':
+    EMAIL_TO = os.getenv('EMAIL_TO_GROUP2', os.getenv('EMAIL_TO', 'lalvishn@in.ibm.com,lv1087@att.com'))
+    EMAIL_CC = os.getenv('EMAIL_CC_GROUP2', '')
+else:
+    EMAIL_TO = os.getenv('EMAIL_TO', 'lalvishn@in.ibm.com,lv1087@att.com')
+    EMAIL_CC = os.getenv('EMAIL_CC', '')
+
 EMAIL_SUBJECT = os.getenv('EMAIL_SUBJECT') or os.getenv('EMAIL_SUBMIT') or 'L2 Project Dashboard Report - ETE Status Update'
 
 
