@@ -8,6 +8,9 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Generated report output (regenerated on every run)
+html_reports/
+
 # Logs (keep folder, not files)
 logs/*.log
 
