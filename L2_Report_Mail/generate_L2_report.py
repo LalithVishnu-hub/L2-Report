@@ -30,7 +30,7 @@ EMAIL_FOOTER = os.getenv(
     'EMAIL_FOOTER',
     'This report is automatically generated and sent daily. For any questions or clarifications regarding the projects listed above, please reach out to the respective Test Lead or Test Manager.'
 )
-EMAIL_SIGNATURE = os.getenv('EMAIL_SIGNATURE', 'Thanks & Regards,\nLalith Vishnu. S')
+EMAIL_SIGNATURE = os.getenv('EMAIL_SIGNATURE', '')
 
 
 def format_email_text(text):
