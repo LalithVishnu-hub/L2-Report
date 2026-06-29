@@ -220,25 +220,34 @@ def build_l1_detail_link(project_id, project_name, dashboard_route):
 
 
 def extract_tc_summary_full(file_path):
-    """Return list of (status_label, count) from Detailed TC Summary sheet."""
+    """Return list of (status_label, count) from Detailed TC Summary sheet.
+    Includes ALL statuses, even those with 0 count."""
     counts = _count_tc_statuses(file_path)
-    if not counts:
+    if not counts and not counts:  # Both empty and no file
         return []
-    total = sum(counts.values())
+    
+    # Define all possible statuses to include
     order = [
         'Completed', 'Execution Completed', 'In Progress',
         'Blocked', 'Failed', 'On Hold', 'Not Started', 'Deferred', 'Descoped',
     ]
+    
     rows = []
-    seen = set()
+    total = 0
+    
+    # Add all statuses in order, showing 0 if not in counts
     for label in order:
-        if label in counts:
-            rows.append((label, str(counts[label])))
-            seen.add(label)
-    # Any remaining statuses not in the ordered list
+        count = counts.get(label, 0)
+        rows.append((label, str(count)))
+        total += count
+    
+    # Add any other statuses that exist but aren't in the standard order
+    seen = set(order)
     for label, cnt in counts.items():
         if label not in seen:
             rows.append((label, str(cnt)))
+            total += cnt
+    
     rows.append(('Total TCs', str(total)))
     return rows
 
@@ -894,15 +903,14 @@ def generate_l2_report_html(projects_data):
                     <tr>
                         <th style="width:6%;">Project ID</th>
                         <th style="width:5%;">UFD #</th>
-                        <th style="width:14%;">Project Name</th>
-                        <th style="width:10%;">TC Summary</th>
+                        <th style="width:16%;">Project Name</th>
                         <th style="width:8%;">Plan Start</th>
                         <th style="width:8%;">Plan End</th>
                         <th style="width:7%;">Planned %</th>
                         <th style="width:7%;">Passed %</th>
                         <th style="width:11%;">Last Updated</th>
                         <th style="width:12%;">Overall Status</th>
-                        <th style="width:12%;">L1 Report</th>
+                        <th style="width:14%;">L1 Report</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -914,7 +922,6 @@ def generate_l2_report_html(projects_data):
         html += f'                    <td>{project["project_id"]}</td>\n'
         html += f'                    <td>{project["ufd_number"]}</td>\n'
         html += f'                    <td>{project["project_name"]}</td>\n'
-        html += f'                    <td style="font-size:8.5pt;">{project["tc_summary_compact"]}</td>\n'
         html += f'                    <td>{project["plan_start"]}</td>\n'
         html += f'                    <td>{project["plan_end"]}</td>\n'
         html += f'                    <td>{project["planned_pct"]}</td>\n'
@@ -953,7 +960,7 @@ def main():
     excel_dir = Path(BOX_LOCAL_PATH)
     
     if not excel_dir.exists():
-        print(f"✗ Directory not found: {excel_dir}")
+        print(f"[ERR] Directory not found: {excel_dir}")
         return
     
     # Get all Excel files (including .xlsm), skip temp lock files (~$...)
@@ -965,7 +972,7 @@ def main():
     )
     
     if not excel_files:
-        print(f"✗ No Excel files found")
+        print(f"[ERR] No Excel files found")
         return
     
     print(f"Found {len(excel_files)} Excel file(s):")
@@ -982,13 +989,13 @@ def main():
         project_id, project_name, file_date, dashboard_route = parse_project_info_from_filename(file_path.name)
         
         if not project_id:
-            print(f"  ⚠ Could not parse project ID from filename")
+            print(f"  [WARN] Could not parse project ID from filename")
             continue
         
         # Get status data from Excel
         data = read_l2_project_data(file_path)
         if not data:
-            print(f"  ⚠ Could not read data from Excel")
+            print(f"  [WARN] Could not read data from Excel")
             continue
         
         # Build project record
@@ -1015,7 +1022,7 @@ def main():
         projects_data.append(project_record)
         # Store original file_path on record so static pages can be generated later
         project_record['_file_path'] = file_path
-        print(f"  ✓ Project: {project_name}")
+        print(f"  [OK] Project: {project_name}")
         print(f"      Test Lead: {data['test_lead']} | Test Manager: {data['test_manager']}")
         print(f"      UFD: {data['ufd_number']} | Updated: {data['last_updated']}")
         if file_date:
@@ -1026,7 +1033,7 @@ def main():
     print()
     
     if not projects_data:
-        print("✗ No projects found")
+        print("[ERR] No projects found")
         return
     
     # Deduplicate by project name
@@ -1047,7 +1054,7 @@ def main():
     output_dir.mkdir(exist_ok=True)
     output_file = output_dir / 'L2_Report.html'
     output_file.write_text(html, encoding='utf-8')
-    print(f"✓ HTML saved: {output_file}")
+    print(f"[OK] HTML saved: {output_file}")
     print(f"  File size: {output_file.stat().st_size:,} bytes")
     print(f"  Projects: {len(projects_data)}")
     print()
@@ -1066,8 +1073,8 @@ def main():
             page_html = generate_l1_static_page(project, fp)
             page_file = l1_dir / f'PID_{safe_id}_{safe_name}.html'
             page_file.write_text(page_html, encoding='utf-8')
-            print(f"  ✓ {page_file.name}")
-        print(f"✓ L1 static pages saved to: {l1_dir}")
+            print(f"  [OK] {page_file.name}")
+        print(f"[OK] L1 static pages saved to: {l1_dir}")
         print()
 
     # Open in browser

@@ -45,10 +45,20 @@ if '--group' in sys.argv:
         contact_group = sys.argv[idx + 1]
         logger.info(f"Using contact group: {contact_group}")
 
+# Parse command line arguments for dry-run mode
+dry_run = '--dry-run' in sys.argv
+if dry_run:
+    logger.info("DRY-RUN MODE: Email will NOT be actually sent")
+    logger.info("DRY-RUN MODE: Using test email (lv1087@att.com) instead of actual recipients")
+
 # Get Email Configuration from .env
 EMAIL_FROM = os.getenv('EMAIL_FROM', 'lalvishn@in.ibm.com')
 
-if contact_group == 'group2':
+if dry_run:
+    # For dry-run, always use test email
+    EMAIL_TO = 'lv1087@att.com'
+    EMAIL_CC = ''
+elif contact_group == 'group2':
     EMAIL_TO = os.getenv('EMAIL_TO_GROUP2', os.getenv('EMAIL_TO', 'lalvishn@in.ibm.com,lv1087@att.com'))
     EMAIL_CC = os.getenv('EMAIL_CC_GROUP2', '')
 else:
@@ -205,13 +215,19 @@ def send_via_outlook_account():
         logger.info(f"  Body: HTML ({len(email_body)} bytes)")
         
         # Send email
-        logger.info("Sending email via Outlook...")
-        mail_item.Send()
+        if dry_run:
+            logger.info("=" * 80)
+            logger.info("[DRY-RUN] Email would be sent with the above details (NOT actually sending)")
+            logger.info(f"[DRY-RUN] Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info("=" * 80)
+        else:
+            logger.info("Sending email via Outlook...")
+            mail_item.Send()
+            logger.info("=" * 80)
+            logger.info("[OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!")
+            logger.info(f"[OK] Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info("=" * 80)
         
-        logger.info("=" * 80)
-        logger.info("[OK] EMAIL SENT SUCCESSFULLY VIA OUTLOOK!")
-        logger.info(f"[OK] Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        logger.info("=" * 80)
         return True
         
     except Exception as e:
