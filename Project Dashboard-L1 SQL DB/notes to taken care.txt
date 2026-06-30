@@ -1,6 +1,0 @@
-pip install -r requirements.txt --> Install required Python packages
-python app.py --> Run app
-curl.exe -X POST http://localhost:5000/admin/import --> to import github files to DB
-pip install flask pandas openpyxl --> Install required Packages
-python -m venv .venv venv\\Scripts\\activate --> to create virtual environment
-pip install python-dotenv --> Install python-dotenv

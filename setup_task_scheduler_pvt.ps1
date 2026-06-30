@@ -1,18 +1,18 @@
-# PowerShell Script to Configure Task Scheduler for L2 Report Group 2
+# PowerShell Script to Configure Task Scheduler for L2 Report PVT
 # Run this as Administrator to set up the task with proper settings
-# Sends to secondary contact group on weekdays at 8:10 AM
+# Sends PVT report on weekdays at 8:20 AM
 
 # Define variables
-$taskName = "L2 Report Daily - Group 2"
+$taskName = "L2 Report Daily - PVT"
 $taskFolder = "L2 Report"
 $pythonScript = "C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\L2_Report_Mail\send_l2_report_outlook_account.py"
 $pythonExe = "C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB\.venv\Scripts\python.exe"
 $workDir = "C:\Users\LalithVishnu\Desktop\Project Dashboard-L2 SQL DB"
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "L2 Report Task Scheduler Setup - Group 2" -ForegroundColor Cyan
+Write-Host "L2 Report Task Scheduler Setup - PVT" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "This task runs on weekdays at 8:10 AM" -ForegroundColor Yellow
+Write-Host "This task runs on weekdays at 8:20 AM" -ForegroundColor Yellow
 Write-Host " "
 
 # Check if running as admin
@@ -23,22 +23,22 @@ if (-not $isAdmin) {
     exit 1
 }
 
-# Create task action - uses python directly with venv and --group parameter
-$argumentString = "$pythonScript --group group2"
+# Create task action - uses python directly with venv and --report-type pvt parameter
+$argumentString = "$pythonScript --report-type pvt"
 $action = New-ScheduledTaskAction `
     -Execute $pythonExe `
     -Argument $argumentString `
     -WorkingDirectory $workDir
 
-Write-Host "[+] Task action created (Group 2 parameter added)" -ForegroundColor Green
+Write-Host "[+] Task action created (--report-type pvt parameter added)" -ForegroundColor Green
 
-# Set task to run at 8:10 AM on weekdays (Monday-Friday)
+# Set task to run at 8:20 AM on weekdays (Monday-Friday)
 $trigger = New-ScheduledTaskTrigger `
     -Weekly `
     -DaysOfWeek @('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday') `
-    -At "8:10 AM"
+    -At "8:20 AM"
 
-Write-Host "[+] Weekly trigger set for weekdays at 8:10 AM (Mon-Fri)" -ForegroundColor Green
+Write-Host "[+] Weekly trigger set for weekdays at 8:20 AM (Mon-Fri)" -ForegroundColor Green
 
 # Create settings with all the necessary options
 $settings = New-ScheduledTaskSettingsSet `
@@ -87,12 +87,12 @@ try {
     Write-Host "========================================" -ForegroundColor Green
     Write-Host "Task Name: $taskName" -ForegroundColor White
     Write-Host "Task Path: \L2 Report\" -ForegroundColor White
-    Write-Host "Schedule: Weekdays Mon-Fri at 8:10 AM" -ForegroundColor White
-    Write-Host "Contact Group: Group 2" -ForegroundColor White
+    Write-Host "Schedule: Weekdays Mon-Fri at 8:20 AM" -ForegroundColor White
+    Write-Host "Report Type: PVT" -ForegroundColor White
     Write-Host "Script: $pythonScript" -ForegroundColor White
     Write-Host "Working Directory: $workDir" -ForegroundColor White
     Write-Host " "
-    Write-Host "Note: Make sure EMAIL_TO_GROUP2 and EMAIL_CC_GROUP2 are configured in .env" -ForegroundColor Yellow
+    Write-Host "Note: Make sure EMAIL_TO_PVT and EMAIL_CC_PVT are configured in .env" -ForegroundColor Yellow
     Write-Host " "
 }
 catch {

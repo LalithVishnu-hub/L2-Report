@@ -37,6 +37,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Parse command line arguments for report type (ETE or PVT)
+report_type = 'ETE'  # default
+if '--report-type' in sys.argv:
+    idx = sys.argv.index('--report-type')
+    if idx + 1 < len(sys.argv):
+        report_type = sys.argv[idx + 1].upper()
+        logger.info(f"Using report type: {report_type}")
+
 # Parse command line arguments for contact group selection
 contact_group = 'group1'  # default
 if '--group' in sys.argv:
@@ -51,39 +59,49 @@ if dry_run:
     logger.info("DRY-RUN MODE: Email will NOT be actually sent")
     logger.info("DRY-RUN MODE: Using test email (lv1087@att.com) instead of actual recipients")
 
-# Get Email Configuration from .env
+# Get Email Configuration from .env based on report type
 EMAIL_FROM = os.getenv('EMAIL_FROM', 'lalvishn@in.ibm.com')
 
-if dry_run:
-    # For dry-run, always use test email
-    EMAIL_TO = 'lv1087@att.com'
-    EMAIL_CC = ''
-elif contact_group == 'group2':
-    EMAIL_TO = os.getenv('EMAIL_TO_GROUP2', os.getenv('EMAIL_TO', 'lalvishn@in.ibm.com,lv1087@att.com'))
-    EMAIL_CC = os.getenv('EMAIL_CC_GROUP2', '')
+if report_type == 'PVT':
+    if dry_run:
+        EMAIL_TO = 'lv1087@att.com'
+        EMAIL_CC = ''
+    else:
+        EMAIL_TO = os.getenv('EMAIL_TO_PVT', 'lv1087@att.com')
+        EMAIL_CC = os.getenv('EMAIL_CC_PVT', '')
+    EMAIL_SUBJECT = os.getenv('EMAIL_SUBJECT_PVT', 'L2 Project Dashboard Report - PVT Status Update')
 else:
-    EMAIL_TO = os.getenv('EMAIL_TO', 'lalvishn@in.ibm.com,lv1087@att.com')
-    EMAIL_CC = os.getenv('EMAIL_CC', '')
-
-EMAIL_SUBJECT = os.getenv('EMAIL_SUBJECT') or os.getenv('EMAIL_SUBMIT') or 'L2 Project Dashboard Report - ETE Status Update'
+    # ETE report type
+    if dry_run:
+        EMAIL_TO = 'lv1087@att.com'
+        EMAIL_CC = ''
+    elif contact_group == 'group2':
+        EMAIL_TO = os.getenv('EMAIL_TO_GROUP2', os.getenv('EMAIL_TO', 'lalvishn@in.ibm.com,lv1087@att.com'))
+        EMAIL_CC = os.getenv('EMAIL_CC_GROUP2', '')
+    else:
+        EMAIL_TO = os.getenv('EMAIL_TO', 'lalvishn@in.ibm.com,lv1087@att.com')
+        EMAIL_CC = os.getenv('EMAIL_CC', '')
+    EMAIL_SUBJECT = os.getenv('EMAIL_SUBJECT') or os.getenv('EMAIL_SUBMIT') or 'L2 Project Dashboard Report - ETE Status Update'
 
 
 def generate_l2_report():
     """Generate fresh L2 Report HTML"""
-    logger.info("Generating L2 Report...")
+    logger.info(f"Generating L2 Report ({report_type})...")
     try:
         import generate_L2_report
         try:
-            generate_L2_report.main()
+            generate_L2_report.main(report_type=report_type)
         except:
             pass
         
-        html_file = parent_dir / 'html_reports' / 'L2_Report.html'
+        # Read HTML from local html_reports/
+        html_file = parent_dir / 'html_reports' / f'L2_Report_{report_type}.html'
+        
         if html_file.exists():
-            logger.info(f"[OK] L2_Report.html generated successfully")
+            logger.info(f"[OK] L2_Report_{report_type}.html generated successfully")
             return True
         else:
-            logger.error("L2_Report.html not found in html_reports folder")
+            logger.error(f"L2_Report_{report_type}.html not found in {html_file.parent}")
             return False
     except Exception as e:
         logger.error(f"Error generating L2 Report: {e}")
@@ -143,9 +161,11 @@ def send_via_outlook_account():
         # Get the default account (user's primary email account)
         logger.info(f"Getting Outlook account for {EMAIL_FROM}...")
         
-        html_file = parent_dir / 'html_reports' / 'L2_Report.html'
+        # Read HTML from local html_reports/
+        html_file = parent_dir / 'html_reports' / f'L2_Report_{report_type}.html'
+        
         if not html_file.exists():
-            logger.error("L2_Report.html not found in html_reports folder")
+            logger.error(f"L2_Report_{report_type}.html not found in {html_file.parent}")
             return False
             
         with open(html_file, 'r', encoding='utf-8') as f:

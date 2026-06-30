@@ -205,13 +205,16 @@ def extract_tc_summary_compact(file_path):
     return f"T:{total} | C:{completed} | IP:{in_progress} | B:{blocked} | EC:{execution_completed}"
 
 
-def build_l1_detail_link(project_id, project_name, dashboard_route):
-    """Build URL to GitHub Pages static L1 page (preferred) or local Flask fallback."""
+def build_l1_detail_link(project_id, project_name, dashboard_route, report_type='ETE'):
+    """Build URL to the L1 static page hosted on GitHub Pages."""
     safe_id = str(project_id or '').strip()
+    safe_name = re.sub(r'[^\w]', '_', str(project_name or '').strip())
+
+    # GitHub Pages — primary link (works for all email recipients)
     if GITHUB_PAGES_BASE_URL and safe_id:
-        safe_name = re.sub(r'[^\w]', '_', str(project_name or '').strip())
-        return f"{GITHUB_PAGES_BASE_URL}/html_reports/L1/PID_{safe_id}_{safe_name}.html"
-    # Fallback: local Flask dashboard
+        return f"{GITHUB_PAGES_BASE_URL}/html_reports/L1_{report_type.upper()}/PID_{safe_id}_{safe_name}.html"
+
+    # Final fallback: local Flask dashboard
     if not L1_DASHBOARD_BASE_URL:
         return '#'
     route = dashboard_route or '/ete'
@@ -422,8 +425,10 @@ def read_defect_log(file_path):
 def _status_color(status):
     s = str(status).lower()
     if 'blocked' in s: return '#e74c3c'
-    if 'in progress' in s or 'on schedule' in s or 'ahead' in s or 'completed' in s and 'execution' in s: return '#27ae60'
-    if 'completed' in s: return '#3498db'
+    if 'in progress' in s: return '#27ae60'
+    if 'on schedule' in s: return '#27ae60'
+    if 'ahead' in s: return '#27ae60'
+    if 'completed' in s: return '#3498db'  # Both 'Completed' and 'Execution Completed' -> Blue
     if 'behind' in s: return '#f39c12'
     if 'not started' in s: return '#95a5a6'
     if 'failed' in s: return '#c0392b'
@@ -601,7 +606,7 @@ def generate_l1_static_page(project, file_path):
   .grid{{display:grid;grid-template-columns:1fr 1fr;gap:8px 32px;margin-bottom:16px;}}
   .field label{{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;}}
   .field span{{font-size:14px;color:#222;}}
-  .status-badge{{display:inline-block;padding:6px 18px;border-radius:20px;color:#fff;font-weight:bold;font-size:14px;background:{status_color};}}
+  .status-badge{{display:inline-block;padding:6px 18px;border-radius:20px;color:#fff;font-weight:bold;font-size:14px;background:{status_color};white-space:nowrap;}}
   .summary-table{{width:340px;border-collapse:collapse;margin-top:8px;margin-bottom:20px;}}
   .summary-table th{{background:#4472C4;color:#fff;padding:9px 14px;text-align:left;font-size:13px;}}
   .summary-table td{{border:1px solid #ddd;font-family:'Times New Roman',serif;font-size:13px;}}
@@ -763,27 +768,28 @@ def read_l2_project_data(file_path):
         return None
 
 
-def get_status_badge_html(status_text):
-    """Return HTML for status badge matching dashboard styling."""
+def get_status_color(status_text):
+    """Return hex background color for a status value."""
     status_lower = str(status_text).strip().lower()
-    
-    # Determine color and text
     if 'blocked' in status_lower:
-        bg_color = '#e74c3c'  # Red
+        return '#e74c3c'  # Red
     elif 'in progress' in status_lower:
-        bg_color = '#27ae60'  # Green
+        return '#27ae60'  # Green
     elif 'completed' in status_lower:
-        bg_color = '#3498db'  # Blue
+        return '#3498db'  # Blue
     elif 'on schedule' in status_lower:
-        bg_color = '#27ae60'  # Green
+        return '#27ae60'  # Green
     elif 'behind' in status_lower:
-        bg_color = '#f39c12'  # Orange/Yellow
+        return '#f39c12'  # Orange/Amber
     elif 'ahead' in status_lower:
-        bg_color = '#27ae60'  # Green
+        return '#27ae60'  # Green
     else:
-        bg_color = '#7f8c8d'  # Gray
-    
-    return f'<span style="background: {bg_color}; color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 9pt; display: inline-block; font-family: Times New Roman, Times, serif;">{status_text}</span>'
+        return '#7f8c8d'  # Gray
+
+
+def get_status_badge_html(status_text):
+    """Kept for backwards compatibility - returns empty string (color applied to td directly)."""
+    return str(status_text)
 
 
 def deduplicate_by_project_name(projects_list):
@@ -814,8 +820,18 @@ def deduplicate_by_project_name(projects_list):
     return list(seen.values())
 
 
-def generate_l2_report_html(projects_data):
-    """Generate L2 report HTML with email format."""
+def generate_l2_report_html(projects_data, greeting=None, intro_message=None):
+    """Generate L2 report HTML with email format.
+    
+    Args:
+        projects_data: List of project records
+        greeting: Custom greeting message (uses EMAIL_GREETING if not provided)
+        intro_message: Custom intro message (uses EMAIL_INTRO_MESSAGE if not provided)
+    """
+    if greeting is None:
+        greeting = EMAIL_GREETING
+    if intro_message is None:
+        intro_message = EMAIL_INTRO_MESSAGE
     
     html = r'''<!DOCTYPE html>
 <html lang="en">
@@ -933,7 +949,7 @@ def generate_l2_report_html(projects_data):
         html += f'                    <td>{project["planned_pct"]}</td>\n'
         html += f'                    <td>{project["passed_pct"]}</td>\n'
         html += f'                    <td>{project["last_updated"]}</td>\n'
-        html += f'                    <td>{project["status_html"]}</td>\n'
+        html += f'                    <td style="background: {project["status_color"]}; color: white; font-weight: bold; padding: 0;"><div style="padding: 6px 4px;">{project["overall_status"]}</div></td>\n'
         html += f'                    <td><a href="{project["details_link"]}" target="_blank" rel="noopener noreferrer">Click here for more details</a></td>\n'
         html += '                </tr>\n'
     
@@ -949,22 +965,75 @@ def generate_l2_report_html(projects_data):
 </body>
 </html>
 '''
-    html = html.replace('__EMAIL_GREETING__', format_email_text(EMAIL_GREETING))
-    html = html.replace('__EMAIL_INTRO_MESSAGE__', format_email_text(EMAIL_INTRO_MESSAGE))
+    html = html.replace('__EMAIL_GREETING__', format_email_text(greeting))
+    html = html.replace('__EMAIL_INTRO_MESSAGE__', format_email_text(intro_message))
     html = html.replace('__EMAIL_FOOTER__', format_email_text(EMAIL_FOOTER))
     html = html.replace('__EMAIL_SIGNATURE__', format_email_text(EMAIL_SIGNATURE))
     return html
 
 
-def main():
-    """Main execution."""
+def push_html_to_github(report_type: str):
+    """Commit generated HTML files and push to GitHub for GitHub Pages hosting."""
+    import subprocess
+
+    token = os.getenv('GITHUB_TOKEN', '').strip()
+    user = os.getenv('GITHUB_USER', '').strip()
+    repo = os.getenv('GITHUB_REPO', '').strip()
+
+    if not all([token, user, repo]):
+        print("[GitHub] GITHUB_TOKEN / USER / REPO not set — skipping push")
+        return
+
+    root = str(PROJECT_ROOT)
+    timestamp = datetime.now().strftime('%d-%m-%Y %H:%M')
+
+    try:
+        subprocess.run(['git', 'add', 'html_reports/'], cwd=root, check=True, capture_output=True)
+
+        diff = subprocess.run(['git', 'diff', '--cached', '--quiet'], cwd=root)
+        if diff.returncode == 0:
+            print("[GitHub] No HTML changes to commit")
+            return
+
+        msg = f"Auto: L2 {report_type} report + L1 pages [{timestamp}]"
+        subprocess.run(['git', 'commit', '-m', msg], cwd=root, check=True, capture_output=True)
+
+        # Push with token-embedded URL, then restore clean URL
+        remote_url = f"https://{token}@github.com/{user}/{repo}.git"
+        subprocess.run(['git', 'remote', 'set-url', 'origin', remote_url], cwd=root, check=True, capture_output=True)
+        subprocess.run(['git', 'push', 'origin', 'main'], cwd=root, check=True, capture_output=True)
+        clean_url = f"https://github.com/{user}/{repo}.git"
+        subprocess.run(['git', 'remote', 'set-url', 'origin', clean_url], cwd=root, check=True, capture_output=True)
+
+        print(f"[GitHub] Pushed — Pages: {GITHUB_PAGES_BASE_URL}/html_reports/")
+    except subprocess.CalledProcessError as e:
+        print(f"[GitHub] Push failed: {e}")
+
+
+def main(report_type='ETE'):
+    """Main execution.
+    
+    Args:
+        report_type: 'ETE' or 'PVT' - determines which report to generate
+    """
     print("=" * 70)
-    print("L2 Report - Enhanced Dashboard Style with Deduplication")
+    print(f"L2 Report - {report_type} Dashboard (Enhanced with Deduplication)")
     print("=" * 70)
     print()
     
-    excel_dir = Path(BOX_LOCAL_PATH)
+    # Determine paths and messages based on report type
+    report_type = report_type.upper()
+    if report_type == 'PVT':
+        excel_dir_key = 'PVT_BOX_PATH'
+        greeting = os.getenv('EMAIL_GREETING_PVT', os.getenv('EMAIL_GREETING', 'Hi All,'))
+        intro_msg = os.getenv('EMAIL_INTRO_MESSAGE_PVT', os.getenv('EMAIL_INTRO_MESSAGE', 'Please find below the L2 Project Dashboard for PVT Wireline Projects.'))
+    else:
+        excel_dir_key = 'ETE_BOX_PATH'
+        greeting = os.getenv('EMAIL_GREETING', 'Hi All,')
+        intro_msg = os.getenv('EMAIL_INTRO_MESSAGE', 'Please find below the L2 Project Dashboard for ETE Wireline Projects.')
     
+    excel_dir = Path(os.getenv(excel_dir_key, BOX_LOCAL_PATH))
+
     if not excel_dir.exists():
         print(f"[ERR] Directory not found: {excel_dir}")
         return
@@ -978,7 +1047,7 @@ def main():
     )
     
     if not excel_files:
-        print(f"[ERR] No Excel files found")
+        print(f"[ERR] No Excel files found in {excel_dir}")
         return
     
     print(f"Found {len(excel_files)} Excel file(s):")
@@ -1021,8 +1090,9 @@ def main():
             'file_mtime': data['file_mtime'],
             'file_date': file_date,
             'dashboard_route': dashboard_route,
-            'details_link': build_l1_detail_link(project_id, project_name, dashboard_route),
-            'status_html': get_status_badge_html(data['overall_status'])
+            'details_link': build_l1_detail_link(project_id, project_name, dashboard_route, report_type),
+            'status_html': get_status_badge_html(data['overall_status']),
+            'status_color': get_status_color(data['overall_status'])
         }
         
         projects_data.append(project_record)
@@ -1041,51 +1111,58 @@ def main():
     if not projects_data:
         print("[ERR] No projects found")
         return
-    
+
     # Deduplicate by project name
     print(f"Total projects before deduplication: {len(projects_data)}")
     projects_data = deduplicate_by_project_name(projects_data)
     print(f"Total projects after deduplication: {len(projects_data)}")
     print()
-    
+
     # Sort by project ID for consistent display
     projects_data.sort(key=lambda p: p['project_id'])
-    
-    # Generate HTML
-    print("Generating HTML...")
-    html = generate_l2_report_html(projects_data)
-    
-    # Save to file in html_reports folder (in parent directory)
-    output_dir = Path(__file__).parent.parent / 'html_reports'
-    output_dir.mkdir(exist_ok=True)
-    output_file = output_dir / 'L2_Report.html'
+
+    # ── Output directory: local html_reports/ (committed to GitHub Pages) ────
+    output_dir = PROJECT_ROOT / 'html_reports'
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # ── Step 1: Generate L1 static pages ─────────────────────────────────────
+    l1_dir = output_dir / f'L1_{report_type}'
+    l1_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Generating static L1 project pages for {report_type}...")
+    for project in projects_data:
+        fp = project.get('_file_path')
+        if not fp:
+            continue
+        safe_id = str(project['project_id']).strip()
+        safe_name = re.sub(r'[^\w]', '_', str(project['project_name']).strip())
+        page_html = generate_l1_static_page(project, fp)
+        page_file = l1_dir / f'PID_{safe_id}_{safe_name}.html'
+        page_file.write_text(page_html, encoding='utf-8')
+        print(f"  [OK] {page_file.name}")
+
+    print(f"[OK] L1 static pages saved to: {l1_dir}")
+    print()
+
+    # ── Step 2: Generate L2 HTML ──────────────────────────────────────────────
+    print("Generating L2 HTML...")
+    html = generate_l2_report_html(projects_data, greeting=greeting, intro_message=intro_msg)
+
+    report_filename = f'L2_Report_{report_type}.html'
+    output_file = output_dir / report_filename
     output_file.write_text(html, encoding='utf-8')
     print(f"[OK] HTML saved: {output_file}")
     print(f"  File size: {output_file.stat().st_size:,} bytes")
     print(f"  Projects: {len(projects_data)}")
     print()
 
-    # Generate per-project static L1 pages for GitHub Pages
-    if GITHUB_PAGES_BASE_URL:
-        l1_dir = output_dir / 'L1'
-        l1_dir.mkdir(exist_ok=True)
-        print("Generating static L1 project pages for GitHub Pages...")
-        for project in projects_data:
-            fp = project.get('_file_path')
-            if not fp:
-                continue
-            safe_id = str(project['project_id']).strip()
-            safe_name = re.sub(r'[^\w]', '_', str(project['project_name']).strip())
-            page_html = generate_l1_static_page(project, fp)
-            page_file = l1_dir / f'PID_{safe_id}_{safe_name}.html'
-            page_file.write_text(page_html, encoding='utf-8')
-            print(f"  [OK] {page_file.name}")
-        print(f"[OK] L1 static pages saved to: {l1_dir}")
-        print()
+    # ── Step 3: Push to GitHub Pages ─────────────────────────────────────────
+    push_html_to_github(report_type)
 
     # Open in browser
-    print("Opening in browser...")
-    webbrowser.open(f'file:///{output_file}')
+    try:
+        webbrowser.open(f'file:///{output_file}')
+    except Exception:
+        pass
 
 
 if __name__ == '__main__':

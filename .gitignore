@@ -8,8 +8,8 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Generated report output (regenerated on every run)
-html_reports/
+# Generated HTML is committed and served via GitHub Pages
+# html_reports/  ← intentionally tracked
 
 # Logs (keep folder, not files)
 logs/*.log
