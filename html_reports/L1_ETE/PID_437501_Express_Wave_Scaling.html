@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>L1 Report – Express_Wave_Scaling</title>
+<style>
+  *{box-sizing:border-box;}
+  body{font-family:'Times New Roman',Times,serif;background:#f4f6f9;margin:0;padding:20px;}
+  .card{background:#fff;width:100%;margin:0;border-radius:0;box-shadow:none;overflow:hidden;}
+  .header{background:#4472C4;color:#fff;padding:20px 24px;}
+  .header h1{margin:0;font-size:20px;}
+  .header p{margin:4px 0 0;font-size:12px;opacity:.85;}
+  .body{padding:16px 24px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 32px;margin-bottom:16px;}
+  .field label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px;}
+  .field span{font-size:14px;color:#222;}
+  .status-badge{display:inline-block;padding:6px 18px;border-radius:20px;color:#fff;font-weight:bold;font-size:14px;background:#27ae60;white-space:nowrap;}
+  .summary-table{width:340px;border-collapse:collapse;margin-top:8px;margin-bottom:20px;}
+  .summary-table th{background:#4472C4;color:#fff;padding:9px 14px;text-align:left;font-size:13px;}
+  .summary-table td{border:1px solid #ddd;font-family:'Times New Roman',serif;font-size:13px;}
+  .footer{font-size:11px;color:#aaa;text-align:right;margin-top:20px;border-top:1px solid #eee;padding-top:6px;}
+  tbody tr:nth-child(even){background:#f9f9f9;}
+  tbody tr:hover{background:#eef3ff;}
+  table{border-collapse:collapse;}
+  table th{background:#4472C4;color:#fff;padding:10px;text-align:left;font-weight:bold;}
+  table td{border:1px solid #ddd;padding:8px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h1>Express_Wave_Scaling</h1>
+    <p>Project ID: 437501 &nbsp;|&nbsp; UFD #: N/A</p>
+  </div>
+  <div class="body">
+    <div class="grid">
+      <div class="field"><label>Test Lead</label><span>Harika Annapareddy &lt;HA880V&gt;</span></div>
+      <div class="field"><label>Test Manager</label><span>Ruchita P C &lt;RC642A&gt;</span></div>
+      <div class="field"><label>Plan Start</label><span>06/29/2026</span></div>
+      <div class="field"><label>Plan End</label><span>08/14/2026</span></div>
+      <div class="field"><label>Planned %</label><span>2.07%</span></div>
+      <div class="field"><label>Passed %</label><span>1.03%</span></div>
+      <div class="field"><label>Last Updated</label><span>06/30/2026 01:08 AM</span></div>
+      <div class="field"><label>Overall Status</label><span class="status-badge">On Schedule</span></div>
+    </div>
+    
+    <div style="margin:12px 0;padding:15px;background:#ffebee;border-left:4px solid #d32f2f;border-radius:4px;">
+      <strong style="color:#c62828;font-size:13px;">🔴 Defect Summary:</strong>
+      <p style="margin:6px 0 0;color:#c62828;font-size:12px;line-height:1.5;">Severity: Open | Sev1: 0 | Sev2: 0 | Sev3: 0 | Total: 0</p>
+    </div>
+    <h3 style="margin:28px 0 10px;color:#4472C4;">TC Summary</h3>
+    <table class="summary-table">
+      <thead><tr><th>Status</th><th style="text-align:center;">Count</th></tr></thead>
+      <tbody><tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">Completed</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">0</td></tr>
+<tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">Execution Completed</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">0</td></tr>
+<tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">In Progress</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">1</td></tr>
+<tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">Blocked</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">0</td></tr>
+<tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">Failed</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">0</td></tr>
+<tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">On Hold</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">0</td></tr>
+<tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">Not Started</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">4</td></tr>
+<tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">Deferred</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">0</td></tr>
+<tr style=""><td style="padding:7px 14px;border:1px solid #ddd;">Descoped</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">0</td></tr>
+<tr style="font-weight:bold;background:#f0f4ff;"><td style="padding:7px 14px;border:1px solid #ddd;">Total TCs</td><td style="padding:7px 14px;border:1px solid #ddd;text-align:center;font-weight:bold;">5</td></tr>
+</tbody>
+    </table>
+    
+<h3 style="margin:16px 0 10px;color:#4472C4;">Detailed TC Execution</h3>
+<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;table-layout:fixed;word-wrap:break-word;">
+<thead><tr style="background:#4472C4;color:#fff;"><th style="padding:6px 8px;white-space:normal;text-align:center;width:7%;">Test Set</th><th style="padding:6px 8px;white-space:normal;text-align:center;width:16%;">Test Case Description</th><th style="padding:6px 8px;white-space:normal;text-align:center;width:6%;">Product</th><th style="padding:6px 8px;white-space:normal;text-align:center;width:8%;">Planned Start Date</th><th style="padding:6px 8px;white-space:normal;text-align:center;width:8%;">Planned End Date</th><th style="padding:6px 8px;white-space:normal;text-align:center;width:5%;">Total Steps</th><th style="padding:6px 8px;white-space:normal;text-align:center;width:6%;">Planned Steps</th><th style="padding:6px 8px;white-space:normal;text-align:center;width:6%;">Passed Steps</th><th style="padding:6px 8px;white-space:normal;text-align:center;width:5%;">Planned %</th><th style="padding:6px 8px;white-space:normal;text-align:center;width:5%;">Passed %</th><th style="padding:6px 8px;white-space:normal;text-align:center;width:10%;">Status</th></tr></thead>
+<tbody><tr><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">HLTC01</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;word-wrap:break-word;white-space:normal;text-align:center;" title="AWL Express wave NS order 
+Add Location with 100G Baseline  on both Location
+Location A with Baseline
+Location B with Baseline
+Update 2 Pending Circuit with 100G and 400G with Bay Panel Jack to EO and Verify ETE flow
+
+NOTE:Order will be verified till SOTS Ineffect Status">AWL Express wave NS order 
+Add Location with 100G Baseline  on both Location
+Location A with Baselin…</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">ABF</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">07/22/2026</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">08/05/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">160</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">0</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;"></td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">0.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">0.0%</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;text-align:center;"><span style="background:#95a5a6;color:#fff;padding:3px 6px;border-radius:10px;font-size:10px;font-weight:bold;word-break:break-word;">Not Started</span></td></tr>
+<tr><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">HLTC02</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;word-wrap:break-word;white-space:normal;text-align:center;" title="AWL Express Wave NS order 
+Add Location with 400G Total service on both Location
+Location A with Total service
+Location B with Total Service
+Verify auto Submisssion of 3 Pending circuits with 100G and 400G to EO and verify ETE flow
+NOTE:Order will be verified till SOTS completion">AWL Express Wave NS order 
+Add Location with 400G Total service on both Location
+Location A with Tot…</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">ABF</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">07/26/2026</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">08/14/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">160</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">0</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;"></td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">0.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">0.0%</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;text-align:center;"><span style="background:#95a5a6;color:#fff;padding:3px 6px;border-radius:10px;font-size:10px;font-weight:bold;word-break:break-word;">Not Started</span></td></tr>
+<tr><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">HLTC03</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;word-wrap:break-word;white-space:normal;text-align:center;" title="AWL Express Wave NS order 
+Add Location with 100G with mixed access arrangement
+Location A with Baseline
+Location B with Total Service
+Verify auto submission of 4 Pending circuits with 100G and 400G to EO and verify ETE flow
+NOTE:Order will be verified till SOTS completion">AWL Express Wave NS order 
+Add Location with 100G with mixed access arrangement
+Location A with Base…</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">APB</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">06/29/2026</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">07/15/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">160</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">12</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">6</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">7.5%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">3.8%</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;text-align:center;"><span style="background:#27ae60;color:#fff;padding:3px 6px;border-radius:10px;font-size:10px;font-weight:bold;word-break:break-word;">In Progress</span></td></tr>
+<tr><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">HLTC04</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;word-wrap:break-word;white-space:normal;text-align:center;" title="New Start ABF Order - Regression
+-Direct Seller(ASF)
+- Location not qualified for EI + eDD
+- Speed: 1G 
+- Static">New Start ABF Order - Regression
+-Direct Seller(ASF)
+- Location not qualified for EI + eDD
+- Speed: …</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">ABF</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">07/05/2026</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">07/21/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">60</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">0</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;"></td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">0.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">0.0%</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;text-align:center;"><span style="background:#95a5a6;color:#fff;padding:3px 6px;border-radius:10px;font-size:10px;font-weight:bold;word-break:break-word;">Not Started</span></td></tr>
+<tr><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">HLTC05</td><td style="padding:7px 10px;border:1px solid #ddd;font-size:11px;word-wrap:break-word;white-space:normal;text-align:center;" title="New Start ABF Order + Enhanced 
+- Internet + eDynamic Defense
+- Direct Seller(ASF)
+- Speed: 1G
+- Static">New Start ABF Order + Enhanced 
+- Internet + eDynamic Defense
+- Direct Seller(ASF)
+- Speed: 1G
+- Sta…</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">ABF</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">07/13/2026</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;word-wrap:break-word;text-align:center;">07/29/2026</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">40</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;">0</td><td style="padding:7px 10px;border:1px solid #ddd;white-space:nowrap;text-align:center;"></td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">0.0%</td><td style="padding:7px 10px;border:1px solid #ddd;text-align:center;">0.0%</td><td style="padding:7px 8px;border:1px solid #ddd;white-space:normal;text-align:center;"><span style="background:#95a5a6;color:#fff;padding:3px 6px;border-radius:10px;font-size:10px;font-weight:bold;word-break:break-word;">Not Started</span></td></tr>
+</tbody>
+</table>
+    
+    <div class="footer">Generated: 30 Jun 2026 08:10 PM</div>
+  </div>
+</div>
+</body>
+</html>
